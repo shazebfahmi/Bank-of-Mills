@@ -1,4 +1,5 @@
 <header>
+
 	<nav style="color:blue">
 		<ul class="nav nav-pills" >
 			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Home</a></li>
@@ -6,7 +7,10 @@
 			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Account Management</a></li>
 			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active ">Status Details</a></li>
 			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active ">Account Operations</a></li>
+			{% if session['username'] %}
 			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Logout</a></li>
+			{% endif %}
+
 		</ul>
 	</nav>
 	<hr style="clear:both">
