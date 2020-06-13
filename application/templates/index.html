@@ -1,17 +1,36 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+    <head>
+        <meta charset="utf-8">
+		<title>Sign in</title>
+		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    </head>
+    <body>
+        {% extends "layout.html" %}
 
-{% block content%}
+        {% block content%}
+        <div class="row">
+            <div class="container">
+                <h2>Login</h2>
+                <form action="{{ url_for('login') }}" method="post">
+                  <div class="form-group">
+                    <input type="text" class="form-control form-control-lg w-50" name="username" placeholder="Enter User ID" required>
+                  </div>
+                  <div class="form-group">
+                    <input type="password" class="form-control form-control-lg w-50" name="password" placeholder="Password" required>
+                  </div>
+                    {% if msg %}
+                        <div class="alert alert-danger w-50" role="alert">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                  <button type="submit" class="btn btn-primary">Login</button>
+                </form>
 
-    <div class="row">
-        <div class="col-md-12 text-center">
-            <h1>Welcome to Bangalore Bank.</h1>
-			
-			{%  if login %}
-            <h3>Let's get started.</h3>
-			{%  else %}
-            <p>Already registered? <a href="{{ url_for('index') }}">Login</a></p>
-			{%  endif %}
             </div>
-    </div>
+        </div>
+        {% endblock %}
 
-{% endblock %}
+    </body>
+</html>

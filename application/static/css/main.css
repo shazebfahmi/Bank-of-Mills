@@ -1,7 +1,8 @@
 .header-image{
 	width : 100%;
-	height: 100%
+	height: 70%
 }
+
 
 * {
     box-sizing: border-box;
@@ -31,17 +32,17 @@ li {
 
 a {
     text-decoration: none;
-    color: blue;
+    color: green;
 }
 
 a:hover { color : red;}
 
 hr {
-    width: 100%;
+    width: 130%;
     height:4px;
     margin-left: auto;
     margin-right: auto;
-    background-color: darkblue;
+    background-color: darkgreen;
     border: 0 none;
 }
 

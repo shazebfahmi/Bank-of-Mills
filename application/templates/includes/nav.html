@@ -2,9 +2,13 @@
 	<nav>
 		<ul class="nav nav-pills">
 			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if index %}active{% endif %}">Home</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if courses %}active{% endif %} ">Courses</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Register</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if login %}active{% endif %} ">Login</a></li>
+			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if courses %}active{% endif %} ">Customer Management</a></li>
+			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Account Management</a></li>
+			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Status Details</a></li>
+			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Account Operations</a></li>
+			{% if session['username'] %}
+				<li class="nav-item"><a href="{{ url_for('logout') }}" class="nav-link {% if login %}active{% endif %} ">Logout</a></li>
+			{% endif %}
 		</ul>
 	</nav>
 	<hr style="clear:both">
