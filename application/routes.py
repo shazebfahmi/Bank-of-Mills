@@ -2,14 +2,8 @@ from application import app
 from flask import Flask,redirect,url_for,flash,render_template,request,session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
-import sys
 
 mysql = MySQL(app)
-
-@app.route("/")
-# @app.route("/index")
-def index():
-	return render_template("index.html",index=True)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -27,6 +21,8 @@ def login():
 			return redirect(url_for('home'))
 		else:
 			msg = 'Incorrect username/password!'
+	if 'loggedin' in session:
+		return redirect(url_for('home'))
 	return render_template('index.html', title='Sign In',msg=msg)
 
 @app.route('/logout')
