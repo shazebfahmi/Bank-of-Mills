@@ -1,12 +1,12 @@
 <header>
-	<nav>
-		<ul class="nav nav-pills">
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if index %}active{% endif %}">Home</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if courses %}active{% endif %} ">Customer Management</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Account Management</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Status Details</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if register %}active{% endif %} ">Account Operations</a></li>
-			<li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link {% if login %}active{% endif %} ">Logout</a></li>
+	<nav style="color:blue">
+		<ul class="nav nav-pills" >
+			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Home</a></li>
+			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Customer Management</a></li>
+			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Account Management</a></li>
+			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active ">Status Details</a></li>
+			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active ">Account Operations</a></li>
+			<li><a style="background:darkgreen" href="{{ url_for('index') }}" class="nav-link active">Logout</a></li>
 		</ul>
 	</nav>
 	<hr style="clear:both">
