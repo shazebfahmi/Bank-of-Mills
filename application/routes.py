@@ -2,6 +2,7 @@ from application import app
 from flask import Flask,redirect,url_for,flash,render_template,request,session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
+import time
 
 mysql = MySQL(app)
 
@@ -40,4 +41,36 @@ def home():
 		return render_template('home2.html', username=session['username'],emp_type=session['type'])
 	return redirect(url_for('login'))
 	
-	
+
+@app.route('/create_account', methods=['GET', 'POST'])
+def c_account():
+	msg = ''
+	if request.method == 'POST' and 'customer_id' in request.form and 'account_type' in request.form and 'amount' in request.form:
+		cid = int(request.form['customer_id'])
+		acc_type = str(request.form['account_type'])
+		amount = int(request.form['amount'])
+		t = time.localtime(time.time())
+		last_updated = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
+		details = 'account created successfully'
+		status = int('1')
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s', (cid,acc_type))
+			res = cursor.fetchone()
+			if res['count(*)'] == 1:
+				raise Exception('fail')
+			else:
+				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
+				mysql.connection.commit()
+				flash('Account created successfully','success')
+		except Exception as e:
+			print('Failed to insert into account' + str(e))
+			if str(e).find('foreign key constraint fails') != -1: 
+				msg = 'Customer ID does not exist'
+			elif str(e) == 'fail':
+				msg = 'You already have ' + acc_type + ' account'
+			else:
+				msg = 'Could not create account...Please try again'
+	if 'loggedin' in session and session['type']=='executive':
+		return render_template('create_account.html', username=session['username'],emp_type=session['type'], msg=msg)
+	return redirect(url_for('login'))
