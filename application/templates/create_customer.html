@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Customer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+{% extends "cus_layout.html" %}
+{% block content%}
+<br/>
+<div class="container">
+<form method="post" action="{{ url_for('create_customer') }}" name="cc">
+
+    <div class="form-group">
+        <label >Customer SSN ID</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputSSN" pattern="\d{9}" title="Please enter the nine digit Customer SSN ID" required>
+    </div>
+
+    <div class="form-group">
+        <label >Name</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputName" pattern="[a-zA-Z]*" title="Please enter alphabetical name without special characters and name!" required >
+    </div>
+
+    <div class="form-group">
+        <label >Age</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputAge" pattern="[0-9][0-9][0-9]" title="Please enter 3 digit number! (For example : 022)" required>
+    </div>
+
+    <div class="form-group">
+        <label >Address Line1</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputAddress1" pattern="[a-zA-Z0-9\s]*" title="Please enter alphanumeric address without special characters!" required>
+    </div>
+
+    <div class="form-group">
+        <label>Address Line2</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputAddress2" pattern="[a-zA-Z0-9\s]*" title="Please enter alphanumeric address without special characters!" required>
+    </div>
+
+    <div class="form-group">
+        <label >City</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputCity" required>
+    </div>
+
+    <div class="form-group">
+        <label >State</label>
+        <input type="text" class="form-control form-control-lg w-50" name="InputState" required>
+    </div>
+
+    {% if msg %}
+        <div class="alert alert-danger w-50" role="alert">
+            {{ msg }}
+        </div>
+    {% endif %}
+
+
+
+    <div class="form-group">
+        <label for="Submit"></label>
+        <input type="submit" class="btn btn-dark" id="Submit" />
+    </div>
+
+</form>
+</div>
+{% endblock %}
+</body>
+</html>
+
