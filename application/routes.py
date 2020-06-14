@@ -23,7 +23,7 @@ def login():
 			msg = 'Incorrect username/password!'
 	if 'loggedin' in session:
 		return redirect(url_for('home'))
-	return render_template('index.html', title='Sign In',msg=msg)
+	return render_template('index.html', title='Sign In',msg = msg)
 
 @app.route('/logout')
 def logout():
@@ -34,6 +34,10 @@ def logout():
 
 @app.route('/home')
 def home():
-	if 'loggedin' in session:
-		return render_template('home.html', username=session['username'],emp_type=session['type'])
+	if 'loggedin' in session and session['type']=='executive':
+		return render_template('home1.html', username=session['username'],emp_type=session['type'])
+	elif 'loggedin' in session and session['type']=='cashier':
+		return render_template('home2.html', username=session['username'],emp_type=session['type'])
 	return redirect(url_for('login'))
+	
+	
