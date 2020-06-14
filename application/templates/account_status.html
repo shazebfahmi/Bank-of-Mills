@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<h1 style="text-align: center; color: brown;" ><b>Account Status</b></h1>
+
+
+    <table style="width=100%">
+        <tr>
+            <th>Customer ID</th>
+            <th>Account ID</th>
+            <th>Account Type</th>
+            <th>Account Status</th>
+            <th>Message</th>
+            <th>Last Updated</th>
+            <th>Operations</th>
+
+        {% for i in list %}
+        <tr> 
+            <td>{{ i.customer_id }}</td>
+            <td>{{ i.account_id }}</td>
+            <td>{{ i.account_type }}</td>
+            <td>{{ i.account_status }}</td>
+            <td>{{ i.messages }}</td>
+            <td>{{ i.last_updated }}</td>
+            <td>
+              <form action="{{url_for('account_status')}}" method="POST" >
+                <input type="hidden" name="refresh" value="{{i.account_id}}">
+                <button style="background-color:brown; color:white ;">Refresh</button> 
+              </form>
+           </td>
+        </tr>
+       {% endfor %}
+       </table>
+    
+{% endblock %}

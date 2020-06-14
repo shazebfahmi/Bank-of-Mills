@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<h2 style="text-align:center"><b>UPDATE QUERY</b></h2>
+   <div style="text-align:left; width:800px; margin=0 auto;">
+      <form action="{{url_for('update')}}" method="POST">
+            <label style="padding-right: 55px;"><b>SSN ID</b></label>
+            <input type="number" maxlength="9" name="SSN" value="SSN"><br><br>
+            <label><b>CUSTOMER ID</b></label>
+            <input type="number" maxlength="9" name="CUSTOMER_ID" value="CUSTOMER_ID"><br><br>
+         <button >SEARCH</button>
+      </form>
+</div>
+{% endblock %}
