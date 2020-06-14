@@ -4,7 +4,6 @@ from flask_mysqldb import MySQL
 import MySQLdb
 import mysql.connector as connection
 from application.forms import account
-import datetime
 
 
 mysql = MySQL(app)
@@ -27,7 +26,7 @@ def login():
 			msg = 'Incorrect username/password!'
 	if 'loggedin' in session:
 		return redirect(url_for('home'))
-	return render_template('index.html', title='Sign In',msg=msg)
+	return render_template('index.html', title='Sign In',msg = msg)
 
 @app.route('/logout')
 def logout():
