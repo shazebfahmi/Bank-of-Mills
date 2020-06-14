@@ -27,30 +27,11 @@
                         <tr>
                             <td class="text-center">{{ value['customer_id'] }}</td>
                             <td class="text-center">{{ value['customer_ssn'] }}</td>
-                            <td class="text-center">
-                                {% if session['updated_status'] and value['customer_id'] == session['updated_status'][0]['customer_id'] %}
-                                    {{ 'Active' if session['updated_status'][0]['status'] else 'Inactive' }}
-                                {% else %}
-                                    {{ 'Active' if value['status'] else 'Inactive' }}
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if session['updated_status'] and value['customer_id'] == session['updated_status'][0]['customer_id'] %}
-                                    {{ session['updated_status'][0]['message'] }}
-                                {% else %}
-                                    {{ value['message'] }}
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if session['updated_status'] and value['customer_id'] == session['updated_status'][0]['customer_id'] %}
-                                    {{ session['updated_status'][0]['last_updated'] }}
-                                {% else %}
-                                    {{ value['last_updated'] }}
-                                {% endif %}
-                            </td>
+                            <td class="text-center">{{ 'Active' if value['status'] else 'Inactive' }}</td>
+                            <td class="text-center">{{ value['message'] }}</td>
+                            <td class="text-center">{{ value['last_updated'] }}</td>
                             <td class="text-center">
                                 <form method="post" action="{{ url_for('customer_status') }}">
-                                    <input type="hidden" name="cust_id" value="{{ value['customer_id'] }}"/>
                                     <input type="image" value="submit" src="{{ url_for('static', filename='images/refresh.png') }}"/>
                                 </form>
                             </td>
