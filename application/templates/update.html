@@ -1,0 +1,24 @@
+{% extends "cus_layout.html" %}
+
+{% block content %}
+
+<h2 style="text-align:center ; color :brown ;" ><b>UPDATE QUERY</b></h2>
+<div style="align-items: center; text-align: center;">
+      <form action="{{url_for('update')}}" method="POST">
+      </br></br>
+            <label style="text-align: left;"><b>Customer SSIN :</b> {{ ssn }}</label><br>
+            <label style="text-align: left;"><b>CUSTOMER ID</b>   :{{ customer_id }}</label></br>
+            <input type="hidden" name="ID" value="{{ customer_id }}">
+            <label style="text-align: left;"><b>Old Customer Name :</b>{{ customer_name }}</label><br>
+            <label  style="text-align: left;"><b>New Customer Name* :</b> </label>
+            <input type="text" name="new_name"><br>
+            <label style="text-align: left;"><b>Old Customer Address :</b>{{ customer_address }}</label><br>
+            <label style="text-align: left;"><b>New Address* : </b></label>
+            <input type="text" name="new_address" ><br>
+            <label style="text-align: left;"><b>Old Age   :</b>{{ customer_age }}</label><br>
+            <label style="text-align: left;"><b>New Age* :</b></label>
+            <input type="number" name="new_age"><br><br>
+         <button style="background-color: coral;">SUBMIT</button></form>
+      </form>
+</div>     
+{% endblock %}
