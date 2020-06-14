@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Status</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+    {% extends "cus_layout.html" %}
+        {% block content%}
+            <div class="container">
+                <h1>Customer status</h1>
+                <div class="table-responsive" style="margin-top:30px;">
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center">Customer ID</th>
+                                <th class="text-center">Customer SSN</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Message</th>
+                                <th class="text-center">Last Updated</th>
+                                <th class="text-center">Refresh</th>
+                            </tr>
+                        </thead>
+                        {% for value in values %}
+                        <tr>
+                            <td class="text-center">{{ value['customer_id'] }}</td>
+                            <td class="text-center">{{ value['customer_ssn'] }}</td>
+                            <td class="text-center">
+                                {% if session['updated_status'] and value['customer_id'] == session['updated_status'][0]['customer_id'] %}
+                                    {{ 'Active' if session['updated_status'][0]['status'] else 'Inactive' }}
+                                {% else %}
+                                    {{ 'Active' if value['status'] else 'Inactive' }}
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if session['updated_status'] and value['customer_id'] == session['updated_status'][0]['customer_id'] %}
+                                    {{ session['updated_status'][0]['message'] }}
+                                {% else %}
+                                    {{ value['message'] }}
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if session['updated_status'] and value['customer_id'] == session['updated_status'][0]['customer_id'] %}
+                                    {{ session['updated_status'][0]['last_updated'] }}
+                                {% else %}
+                                    {{ value['last_updated'] }}
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <form method="post" action="{{ url_for('customer_status') }}">
+                                    <input type="hidden" name="cust_id" value="{{ value['customer_id'] }}"/>
+                                    <input type="image" value="submit" src="{{ url_for('static', filename='images/refresh.png') }}"/>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endblock %}
+
+</body>
+</html>

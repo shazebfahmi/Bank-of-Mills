@@ -4,6 +4,7 @@ from flask_mysqldb import MySQL
 import MySQLdb.cursors
 
 mysql = MySQL(app)
+values = {}
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -39,5 +40,21 @@ def home():
 	elif 'loggedin' in session and session['type']=='cashier':
 		return render_template('home2.html', username=session['username'],emp_type=session['type'])
 	return redirect(url_for('login'))
-	
-	
+
+@app.route('/customer_status',methods=['GET', 'POST'])
+def customer_status():
+	global values
+	if('loggedin' not in session):
+		return redirect(url_for('login'))
+	cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+	if (request.method == 'POST' and 'cust_id' in request.form):
+		cust_id = request.form['cust_id']
+		cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id AND S.customer_id ='+cust_id)
+		new_values = cursor.fetchall()
+		session['updated_status'] = new_values
+		return redirect(url_for('customer_status'))
+	if(values):
+		return render_template('customer_status.html', values=values)
+	cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id')
+	values = cursor.fetchall()
+	return render_template('customer_status.html',values=values)
