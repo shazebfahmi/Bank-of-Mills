@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+        <meta charset="utf-8">
+		<title>Home</title>
+<!--		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+	<style>
+		select:invalid { color: gray; }
+	</style>
+	{% extends "cus_layout.html" %}
+	{% block content%}
+		<div class="container">
+			<h3>Create a new account</h3>
+			<form action="{{ url_for('c_account') }}" method="post">
+                  <div class="form-group">
+                    <input type="text" class="form-control form-control-lg w-50" name="customer_id" placeholder="Customer ID (9-digits)" pattern="\d{9}" required>
+                  </div>
+                  <div class="form-group">
+					<select name="account_type" class="form-control form-control-lg w-50" required>
+						<option value="" disabled selected hidden>Select account type</option>
+						<option value="current">Current</option>
+						<option value="savings">Savings</option>
+					</select>
+                  </div>
+				  <div class="form-group">
+                    <input type="number" class="form-control form-control-lg w-50" name="amount" placeholder="Deposit amount" min="1000" required>
+                  </div>
+                    {% if msg %}
+                        <div class="alert alert-danger w-50" role="alert">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                  <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+		</div>
+	{% endblock %}
+</body>
+</html>
