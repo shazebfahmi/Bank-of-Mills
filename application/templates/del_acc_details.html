@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Account Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+    <body>
+        {% extends "cus_layout.html" %}
+        {% block content%}
+        <table class="table">
+            <thead>
+                <tr>
+                <th scope="col">Account Id</th>
+                <th scope="col">Customer Id</th>
+                <th scope="col">Account Type</th>
+                <th scope="col">Balance</th>
+                <th scope="col">Message</th>
+                <th scope="col">Account Created</th>
+                <th scope="col">Last Updated</th>
+                <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th scope="row">{{acc_id}}</th>
+                <td>{{cust_id}}</td>
+                <td>{{acc_type}}</td>
+                <td>{{bal}}</td>
+                <td>{{message}}</td>
+                <td>{{acc_created}}</td>
+                <td>{{last_updated}}</td>
+                <td>{{status}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <br/>
+        <a href = "{{ url_for('delete_account') }}" class="btn btn-dark" role="button">Back</a>
+        <br/>
+        <form method="post" name="da" action="{{ url_for('delete_account_details') }}">
+            <div class="form-group">
+                <input type="hidden" name="acc_id" value="{{acc_id}}">
+            </div>
+            <div class="form-group">
+                <button type="Submit" class="btn btn-dark">Delete Account</button>
+            </div>
+        </form>
+{% endblock %}
+
+</body>
+</html>

@@ -15,9 +15,6 @@
 				<div class="dropdown-content">
 
 					<a href= "{{ url_for('create_customer') }}"><h3>Create New Customer</h3	></a>
-
-					<a href= "{{ url_for('login') }}"><h3>Create New Customer</h3></a>
-
 					<a href= "{{ url_for('update_search') }}"><h3>Edit Customer</h3></a>
 					<a href= "{{ url_for('delete_customer') }}"><h3>Delete Customer</h3></a>
 					<a href= "{{ url_for('customer_status') }}"><h3>View Customer Status</h3></a>
@@ -28,7 +25,7 @@
 			<li><a class="dropbtn" style="background:darkgreen" href="{{ url_for('login') }}" class="nav-link active">Account Management</a></li>
 				<div class="dropdown-content">
 					<a href= "{{ url_for('c_account') }}"><h3>Create New Account</h3></a>
-					<a href= "{{ url_for('login') }}"><h3>Delete Account</h3></a>
+					<a href= "{{ url_for('delete_account') }}"><h3>Delete Account</h3></a>
 				</div>
 			</div>
 			
