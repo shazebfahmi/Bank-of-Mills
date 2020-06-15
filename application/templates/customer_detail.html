@@ -1,0 +1,15 @@
+{% extends 'cus_layout.html' %}
+
+{% block content %}
+
+    <h3 style=" float:left ;text-align: center; color:purple;"><b>CUSTOMER DETAIL</b></h3></br></br>
+        <div style="text-align: left; align-content: left;">
+        <label><b>Customer ID :</b></label>  <label> {{ customer_detail2['customer_id']}}</label></br>
+        <label><b>SSN ID : </b></label><label>  {{ customer_detail1['customer_ssn']}}</label></br>
+        <label><b>Status :</b> </label> <label>  {{"Active" if customer_detail2['status']==1 else "pending"}}</label></br>
+        <label><b>Message :</b> </label> <label>  {{ customer_detail2['message'] }}</label></br>
+        <label><b>Last Updated :</b></label><label>  {{ customer_detail2['last_updated'] }}<label></br>
+       
+
+
+{%endblock%}
