@@ -139,22 +139,26 @@ def update_search():
 	return redirect(url_for('login'))
 @app.route("/update",methods=['GET','POST'])
 def update():
-	if request.method=='POST' and ('SSN' in request.form or 'CUSTOMER_ID' in request.form) :
+	if(request.method=='POST' and ('SSN' in request.form or 'CUSTOMER_ID' in request.form)) :
 		ssn=request.form['SSN']
 		Id=request.form['CUSTOMER_ID']
+		print(ssn,Id)
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
 		details = cursor.fetchone()
 		if(details is None):
 			flash("Could not find an account with given details","danger")
 			return redirect('/update_search')
-		print(details)
+		cursor.execute('SELECT status FROM customer_status WHERE customer_id = %s ', (details['customer_id'],))
+		details2=cursor.fetchone()
+		if(details2['status']!=1):
+			flash("Customer no longer exists exists","danger")
+			return redirect('/update_search')
 	if request.method=='POST' and ('new_name' in request.form or 'new_age' in request.form or 'new_address' in request.form) :
 		n_name=request.form['new_name']
 		n_addr=request.form['new_address']
 		n_age=request.form['new_age']
 		Id=request.form['ID']
-		print(Id)
 		t = time.localtime(time.time())
 		timestamp = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -175,7 +179,11 @@ def update():
 def account_status():
 	cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 	cursor.execute("SELECT * FROM account")
-	details=cursor.fetchall()
+	details_raw=list(cursor.fetchall())
+	details=[]
+	for i in details_raw:
+		if(i['status']==1):
+			details.append(i)
 	if request.method=='POST' and 'refresh' in request.form :
 		return redirect('/account_status')
 	if 'loggedin' in session and session['type']=='executive':
