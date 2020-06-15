@@ -2,40 +2,48 @@
     <head>
         <meta charset="utf-8">
 		<title>Sign in</title>
+		 <link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     </head>
     <body>
-        {% extends "login_layout.html" %}
+        {% extends "cus_layout.html" %}
 
         {% block content%}
+
+		
         <div class="row">
             <div class="container">
                 <h2>Delete Customer </h2>
+				{% if msg %}
+                        <div class="alert alert-danger w-50" role="alert">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
                 <form action="{{ url_for('delete_customer') }}" method="post">
                   <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="customer_id" placeholder="  Enter Customer ID " value="{% if details['customer_id']  %} {{details['customer_id']}} {% endif %}" required>
+                    <h6>Customer Id : </h6><input type="text" class="form-control form-control-lg w-50" name="customer_id" placeholder="  Enter Customer ID " value="{% if details['customer_id']  %} {{details['customer_id']}} {% endif %}" required>
                   </div>
 				  <div class="form-group">
 				   {% if not checked %}<button type="submit" value="r" name="btn" class="btn btn-primary"> Retrieve Customer Information</button>{%endif%}
 				   </div>
                   <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="customer_ssn" placeholder="   Enter Customer SSN " value="{% if details['customer_ssn']  %} {{details['customer_ssn']}} {% endif %}" >
+                    <h6>Customer SSN : </h6><input type="text" class="form-control form-control-lg w-50" name="customer_ssn" placeholder="   Customer SSN " value="{% if details['customer_ssn']  %} {{details['customer_ssn']}} {% endif %}" readonly="readonly" >
                   </div>
 				  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="name" placeholder="   Customer Name " value="{% if details['name']  %} {{details['name']}} {% endif %}" >
+                    <h6>Name : </h6><input type="text" class="form-control form-control-lg w-50" name="name" placeholder="   Customer Name " value="{% if details['name']  %} {{details['name']}} {% endif %}" readonly="readonly" >
                   </div>
 				  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="age" placeholder=" Customer Age" value="{% if details['age']  %} {{details['age']}}    {% endif %}" >
+                    <h6>Age : </h6><input type="text" class="form-control form-control-lg w-50" name="age" placeholder=" Customer Age" value="{% if details['age']  %} {{details['age']}}    {% endif %}" readonly="readonly"  >
                   </div>
 				  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="address" placeholder="    Customer Address" value="{% if details['address']  %} {{details['address']}} {% endif %}">
+                    <h6>Address : </h6><input type="text" class="form-control form-control-lg w-50" name="address" placeholder="    Customer Address" value="{% if details['address']  %} {{details['address']}} {% endif %}" readonly="readonly" >
                   </div>
 				  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="city" placeholder="Customer City " value="{% if details['city']  %} {{details['city']}}    {% endif %}" >
+                    <h6>City : </h6><input type="text" class="form-control form-control-lg w-50" name="city" placeholder="Customer City " value="{% if details['city']  %} {{details['city']}}    {% endif %}" readonly="readonly"  >
                   </div>
 				  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="state" placeholder="   Customer State " value="{% if details['state']  %} {{details['state']}} {% endif %}" >
+                    <h6>State : </h6><input type="text" class="form-control form-control-lg w-50" name="state" placeholder="   Customer State " value="{% if details['state']  %} {{details['state']}} {% endif %}" readonly="readonly"  >
                   </div>
                     {% if msg %}
                         <div class="alert alert-danger w-50" role="alert">
@@ -43,7 +51,7 @@
                         </div>
                     {% endif %}
                   {% if  checked %}<button type="submit" value="d"  name="btn" class="btn btn-primary">Delete Customer Database </button>{% endif %}
-				  </form>
+				  </form><br>
 				  <form action="{{ url_for('delete_customer') }}" method="post">
 					<button value="back"  name="btn" class="btn btn-primary">Go Back  </button>
 				</form>

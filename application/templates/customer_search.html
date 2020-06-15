@@ -2,15 +2,15 @@
 
 {% block content %}
 
-<h3 style="text-align:center ; color: maroon;" ><b>SEARCH CUSTOMER TO UPDATE</b></h3></b3></br></br></br>
+<h3 style="text-align:center ; color:navy ;" ><b>SEARCH CUSTOMER DETAILS</b></h3></b3></br></br></br>
    <div style="align-items: center; align-content: center; text-align: center;">
-      <form action="{{url_for('update')}}" method="POST">
-            <label style="margin-left: 20px ;margin-right: 40px ; color: rebeccapurple;"><b>SSN ID</b></label>
+      <form action="{{url_for('customer_detail')}}" method="POST">
+            <label style="margin-left: 20px ;margin-right: 40px ; color:slateblue;"><b>SSN ID</b></label>
             <input placeholder="Enter 9 digit Customer ID" type="number"  title="SSN ID must be a 9 digit numeric entry" name="SSN" value="SSN"></br></br>
             <label style="margin-left: 30px;"><b>OR</b></label></br></br>
-            <label style="color: rebeccapurple;"><b>CUSTOMER ID</b></label>
+            <label style="color:slateblue;"><b>CUSTOMER ID</b></label>
             <input type="number" placeholder="Enter 9 digit SSSN ID" title="CUSTOMER ID must be a 9 digit numeric entry" name="CUSTOMER_ID" value="CUSTOMER_ID"></br></br>
-         <button style="background-color:darkred ; color: floralwhite;">SEARCH</button>
+         <button style="background-color:orange ; text-color: black ; ">SEARCH</button>
       </form>
 </div>
 {% endblock %}
