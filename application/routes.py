@@ -3,8 +3,8 @@ from flask import Flask,redirect,url_for,flash,render_template,request,session
 from flask_mysqldb import MySQL 
 import MySQLdb
 import MySQLdb.cursors
-from application.forms import account
 import time
+from datetime import datetime
 import re
 
 mysql = MySQL(app)
@@ -63,8 +63,7 @@ def c_account():
 		cid = int(request.form['customer_id'])
 		acc_type = str(request.form['account_type'])
 		amount = int(request.form['amount'])
-		t = time.localtime(time.time())
-		last_updated = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
+		last_updated = str(datetime.utcnow())
 		details = 'account created successfully'
 		status = int('1')
 		try:
@@ -75,6 +74,7 @@ def c_account():
 				raise Exception('fail')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
+				cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 		except Exception as e:
@@ -134,114 +134,134 @@ def create_customer():
 ######## CUSTOMER UPDATE ########
 @app.route('/update_search')
 def update_search():
-	return render_template('update_search.html')
+	if 'loggedin' in session and session['type'] == 'executive':
+		return render_template('update_search.html')
+	return redirect(url_for('login'))
 @app.route("/update",methods=['GET','POST'])
 def update():
-	if request.method=='POST' and ('SSN' in request.form or 'CUSTOMER_ID' in request.form) :
+	if(request.method=='POST' and ('SSN' in request.form or 'CUSTOMER_ID' in request.form)) :
 		ssn=request.form['SSN']
 		Id=request.form['CUSTOMER_ID']
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
 		details = cursor.fetchone()
 		if(details is None):
+			flash("Could not find an account with given details","danger")
 			return redirect('/update_search')
-		ssn = details['customer_ssn']
-		Id= details['customer_id']
-		address=details['address']
-		name=details['name']
-		age=details['age']
+		cursor.execute('SELECT status FROM customer_status WHERE customer_id = %s ', (details['customer_id'],))
+		details2=cursor.fetchone()
+		if(details2['status']!=1):
+			flash("Customer no longer exists exists","danger")
+			return redirect('/update_search')
 	if request.method=='POST' and ('new_name' in request.form or 'new_age' in request.form or 'new_address' in request.form) :
 		n_name=request.form['new_name']
 		n_addr=request.form['new_address']
 		n_age=request.form['new_age']
 		Id=request.form['ID']
+		timestamp = timestamp = datetime.utcnow()
+		print(timestamp)
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-		if(n_name is not None):
-			cursor.execute("UPDATE customer SET name = %s WHERE customer_id=%s",(n_name,Id,))
-		if(n_addr is not None):
-			cursor.execute("UPDATE customer SET address = %s WHERE customer_id=%s",(n_addr,Id,))
-		if(n_age is not None):
-			cursor.execute("UPDATE customer SET age = %s WHERE customer_id=%s",(n_age,Id,))
+		cursor.execute("UPDATE customer SET name = %s,address=%s,age=%s WHERE customer_id=%s",(n_name,n_addr,n_age,Id,))
 		cursor.execute("UPDATE customer_status SET message=%s WHERE customer_id=%s",("customer update complete",Id,))
+		cursor.execute("UPDATE customer_status SET message=%s WHERE last_updated=%s",(timestamp,Id,))
 		cursor.execute("COMMIT")
+		flash("Successfully Updated","success")
 		return redirect(url_for('login'))
-	return render_template("update.html",ssn=ssn,customer_id=Id,customer_name=name,customer_age=age,customer_address=address)
+	if 'loggedin' in session and session['type']=='executive':
+		return render_template("update.html",details=details)
+	return redirect(url_for('login'))
+
 
 	
 ######## ACCOUNT STATUS ####### 
 @app.route('/account_status',methods=['GET','POST'])
 def account_status():
 	cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-	cursor.execute("SELECT customer_id FROM account")
-	id_raw=cursor.fetchall()
-	cust_list=[]
-	ids=[]
-	for i in id_raw:
-		ids.append(str(i['customer_id']))
-
-	occured_once=[]
-	for i in ids:
-		cursor.execute("SELECT * FROM customer_status WHERE customer_id = %s",(i,))
-		status_detail=cursor.fetchone()
-		mssg=status_detail['message']
-		lst_up=status_detail['last_updated']
-		status=status_detail['status']
-		if(status==1):
-			status="Active" 
-		else:
-			status="Pending"	
-		cursor.execute("SELECT account_id,account_type FROM account WHERE customer_id = %s",(i,))
-		acc_details=list(cursor.fetchmany(2))
-		if((len(acc_details)==2 and (i not in occured_once)) or len(acc_details)==1 ):
-			acc_id= acc_details[0]['account_id']
-			acc_type=acc_details[0]['account_type']
-			occured_once.append(i)
-		if(len(acc_details)==2 and (i in occured_once)):
-			acc_id= acc_details[1]['account_id']
-			acc_type=acc_details[1]['account_type']
+	cursor.execute("SELECT * FROM account")
+	details_raw=list(cursor.fetchall())
+	details=[]
+	for i in details_raw:
+		if(i['status']==1):
+			details.append(i)
+	if request.method=='POST' and 'refresh' in request.form :
+		return redirect('/account_status')
+	if 'loggedin' in session and session['type']=='executive':
+		return render_template("account_status.html",details=details)
+	return redirect(url_for('login'))
 	
-		obj=account(i,acc_id,acc_type,status,mssg,lst_up)
-		cust_list.append(obj)
-		if request.method=='POST' and 'refresh' in request.form :
-			return redirect('/account_status')
+
+
+##### CUSTOMER SEARCH ######### 
+@app.route('/customer_search')
+def customer_search():
+	if 'loggedin' in session and session['type']=='executive':
+		return render_template('customer_search.html')
+	return redirect(url_for('login'))
+@app.route('/customer_detail',methods=['GET','POST'])
+def customer_detail():
+	if request.method=='POST' and ('SSN' in request.form or 'CUSTOMER_ID' in request.form) :
+		ssn=request.form['SSN']
+		Id=request.form['CUSTOMER_ID']
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
+		customer_detail1 = cursor.fetchone()
+		if(customer_detail1 is None):
+			flash("No user available with given SSN ID/Customer ID","danger")
+			return redirect('/customer_search')
+		cust_id=customer_detail1['customer_id']
+		cursor.execute('SELECT * FROM customer_status WHERE customer_id = %s', (cust_id,))
+		customer_detail2=cursor.fetchone()
+		if(customer_detail2['status']!=1):
+			flash("Customer no longer exists exists","danger")
+			return redirect('/customer_search')
+		if 'loggedin' in session and session['type']=='executive':
+			return render_template("customer_detail.html",customer_detail1=customer_detail1 ,customer_detail2=customer_detail2)
+		return redirect(url_for('login'))
 		
-	return render_template("account_status.html",list=cust_list)
+	
 
 
-##############
 
 ####delete customer page####
 @app.route('/delete_customer',methods=['GET','POST'])
 def delete_customer():
+	if('loggedin' not in session):
+		return redirect(url_for('login'))
+	if('loggedin' in session and session['type'] != 'executive'):
+		return redirect(url_for('home'))
 	checked = False
 	details = None
+	msg= ""
 	if  request.method =='POST' and request.form['btn']=='back':
 		return redirect('home')
 	if  request.method =='POST' and request.form['btn']=='d':
-		#print("deleted query deetcted")
+		print("deleted query deetcted")
 		try:
 			cursor2 = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			id2 = request.form['customer_id']
-			#print(id2)
-			query = "DELETE FROM customer where customer_id= "+ id2
+			print("Hello this was customer id",id2)
+			
 			#print("\n queru=y is : "+query)
-			cursor2.execute("DELETE FROM customer where customer_id = %s",(id2,))
+			timestamp = datetime.utcnow()
+			print("after timestamp")
+			cursor2.execute("UPDATE customer_status set status = 0,message='customer deleted successfully', last_updated = %s  where customer_id = %s",(timestamp,id2))
+			print("delete query executed")
 			cursor2.execute("COMMIT")
-			print('delete query executed')
+			print('delete query committed')
 			flash('Deleted successfully','success')
 			cursor2.close()
 			
 		except:
 			print("in except of delete   ")
-		return render_template('delete_customer.html',checked = checked,details = details ) 	
+		return render_template('delete_customer.html',checked = checked,details = details,msg =msg ) 	
 		
 	if  request.method =='POST' and 'customer_id' in  request.form:
 		print('post detected and customer id was ', request.form['customer_id'] )
-		print('post detected and delete btn id was ', request.form['btn'] )
+		print('post detected and  btn id was ', request.form['btn'] )
 		id = request.form['customer_id']
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			query = "SELECT * FROM customer where customer_id= "+ id
+			query = "SELECT c.customer_id,c.customer_ssn,c.name, c.age, c.address,c.city, c.state FROM customer c, customer_status cs where c.customer_id = cs.customer_id and cs.status = 1 and c.customer_id ="+ id
 			cursor.execute(query)
 			print('query executed')
 			details = cursor.fetchone()
@@ -249,15 +269,15 @@ def delete_customer():
 			if(details is None):
 				print('deyail is none')
 				x = 'Could not search for the customer :'+  id
-				flash(x,'success')
-				return render_template('delete_customer.html',checked = checked)
+				msg =x
+				#flash(x,'success')
+				return render_template('delete_customer.html',checked = checked,msg=msg)
 			checked = True
 			#print(type(details),details)
 			
 		except Exception as e:
 			print("in except of retrieve  ")
-			#msg = "Could not search for the customer"
-	return render_template('delete_customer.html',checked = checked,details =details)
+
 
 @app.route('/delete_account',methods=['GET','POST'])
 def delete_account():
@@ -312,3 +332,90 @@ def delete_account_details():
 	return redirect(url_for('login'))
 
 
+	
+@app.route('/search_account')
+def search_account():
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if('error_empty' in request.args):
+			return render_template('search_account.html',username=session['username'],emp_type=session['type'],error_empty=True)
+		else:
+			return render_template('search_account.html', username=session['username'], emp_type=session['type'])
+	else:
+		return redirect(url_for('login'))
+
+
+@app.route('/display_search_account',methods=['GET','POST'])
+def display_search_account():
+	if request.method == 'GET':
+		return redirect(url_for('search_account'))
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if (request.method=='POST' and 'account_select' in request.form):
+			account_id = request.form['account_select']
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id = C.customer_id AND A.account_id = %s', (account_id,))
+			values_account_select = cursor.fetchone()
+			cust_id = values_account_select['customer_id']
+			cursor.execute('SELECT * FROM account A,customer C,customer_status S WHERE A.customer_id = C.customer_id AND C.customer_id = S.customer_id AND A.customer_id = %s AND S.status=1 AND A.status=1', (cust_id,))
+			values_customer = cursor.fetchall()
+			return render_template('display_search_account.html',values_account_select = values_account_select,values_customer = values_customer)
+		elif request.method == 'POST' and ('customer_id' or 'customer_ssn' or 'account_id' in request.form):
+			customer_id = request.form['customer_id']
+			customer_ssn = request.form['customer_ssn']
+			account_id = request.form['account_id']
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			if(account_id == '' and customer_id == '' and customer_ssn == ''):
+				error_empty = True
+				return redirect(url_for('search_account',error_empty = error_empty))
+			if(account_id == '' and customer_id == ''):
+				cursor.execute('SELECT C.customer_id,C.name FROM customer C,customer_status S WHERE C.customer_ssn = %s AND C.customer_id=S.customer_id AND S.status=1;', (customer_ssn,))
+				values = cursor.fetchone()
+				if(values):
+					customer_id = values['customer_id']
+				else:
+					return render_template('display_search_account.html',error_empty=True)
+			if(account_id == ''):
+				cursor.execute('SELECT * FROM account A,customer C,customer_status S WHERE A.customer_id = C.customer_id AND C.customer_id = S.customer_id AND A.customer_id = %s AND S.status=1 AND A.status=1', (customer_id,))
+				values_customer = cursor.fetchall()
+				if(values_customer):
+					return render_template('display_search_account.html',values_customer = values_customer)
+				else:
+					return render_template('display_search_account.html', error_empty=True)
+			else:
+				cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id=C.customer_id AND account_id = %s AND status=1', (account_id,))
+				values_account = cursor.fetchone()
+				if(values_account):
+					return render_template('display_search_account.html',values_account = values_account)
+				else:
+					return render_template('display_search_account.html', error_empty=True)
+		else:
+			return redirect(url_for('search_account'))
+	else:
+		redirect(url_for('login'))
+
+@app.route('/deposit_money',methods=['GET','POST'])
+def deposit_money():
+	msg = ''
+	if request.method == 'POST' and 'd_amount' in request.form and request.args:
+		cred = request.args.getlist('val')
+		cust_id = cred[0]
+		acc_id = cred[1]
+		acc_type = cred[2]
+		bal = cred[3]
+		amt = request.form['d_amount']
+		t_amt = int(amt) + int(bal)
+		ts = datetime.utcnow()
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cust_id, 'deposit', acc_type, amt))
+			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
+			mysql.connection.commit()
+			flash('Amount deposited successfully','success')
+			return redirect(url_for('login'))
+		except Exception as e:
+			print('Failed to deposit ' + str(e))
+			msg = 'could not deposit money...Please try again'
+	if 'loggedin' in session and session['type']=='cashier':
+		if request.args:
+			data = request.args.getlist('val')
+			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
+	return redirect(url_for('login'))

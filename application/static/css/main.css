@@ -21,3 +21,6 @@ table,th,td{
 
 #for dropdown menus in nav bar
 
+.error {
+    color: red
+}

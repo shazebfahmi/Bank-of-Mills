@@ -2,31 +2,31 @@
 
 {% block content %}
 
-<h1 style="text-align: center; color: brown;" ><b>Account Status</b></h1>
+<h1 style="text-align: center; color: brown;" ><b>Account Status</b></h1></br></br>
 
 
     <table style="width=100%">
         <tr>
-            <th>Customer ID</th>
-            <th>Account ID</th>
-            <th>Account Type</th>
-            <th>Account Status</th>
-            <th>Message</th>
-            <th>Last Updated</th>
-            <th>Operations</th>
+            <th style="background-color:orange ;">Customer ID</th>
+            <th style="background-color:orange ;">Account ID</th>
+            <th style="background-color:orange ;">Account Type</th>
+            <th style="background-color:orange ;">Account Status</th>
+            <th style="background-color:orange ;">Message</th>
+            <th style="background-color:orange ;">Last Updated</th>
+            <th style="background-color:orange ;">Operations</th>
 
-        {% for i in list %}
+        {% for i in details %}
         <tr> 
-            <td>{{ i.customer_id }}</td>
-            <td>{{ i.account_id }}</td>
-            <td>{{ i.account_type }}</td>
-            <td>{{ i.account_status }}</td>
-            <td>{{ i.messages }}</td>
-            <td>{{ i.last_updated }}</td>
+            <td>{{ i['customer_id'] }}</td>
+            <td>{{ i['account_id'] }}</td>
+            <td>{{ i['account_type'] }}</td>
+            <td>{{ 'Active' if i['status']==1 else 'Pending'}}</td>
+            <td>{{ i['message'] }}</td>
+            <td>{{ i['last_updated'] }}</td>
             <td>
               <form action="{{url_for('account_status')}}" method="POST" >
                 <input type="hidden" name="refresh" value="{{i.account_id}}">
-                <button style="background-color:brown; color:white ;">Refresh</button> 
+                <button style=" border-radius: 50%;background-color:brown; color:white ;">Refresh</button> 
               </form>
            </td>
         </tr>
