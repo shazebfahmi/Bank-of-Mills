@@ -300,7 +300,7 @@ def display_search_account():
 		if (request.method=='POST' and 'account_select' in request.form):
 			account_id = request.form['account_select']
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('SELECT * FROM account WHERE account_id = %s', (account_id,))
+			cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id = C.customer_id AND A.account_id = %s', (account_id,))
 			values_account_select = cursor.fetchone()
 			cust_id = values_account_select['customer_id']
 			cursor.execute('SELECT * FROM account WHERE customer_id = %s', (cust_id,))
