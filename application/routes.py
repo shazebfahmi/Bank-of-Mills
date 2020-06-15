@@ -303,7 +303,7 @@ def display_search_account():
 			cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id = C.customer_id AND A.account_id = %s', (account_id,))
 			values_account_select = cursor.fetchone()
 			cust_id = values_account_select['customer_id']
-			cursor.execute('SELECT * FROM account WHERE customer_id = %s', (cust_id,))
+			cursor.execute('SELECT * FROM account A,customer C,customer_status S WHERE A.customer_id = C.customer_id AND C.customer_id = S.customer_id AND A.customer_id = %s AND S.status=1 AND A.status=1', (cust_id,))
 			values_customer = cursor.fetchall()
 			return render_template('display_search_account.html',values_account_select = values_account_select,values_customer = values_customer)
 		elif request.method == 'POST' and ('customer_id' or 'customer_ssn' or 'account_id' in request.form):
