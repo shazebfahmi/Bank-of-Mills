@@ -261,7 +261,52 @@ def delete_customer():
 	
 	return render_template('delete_customer.html',checked = checked,details =details)
 	
-	
-	
-	
+@app.route('/search_account')
+def search_account():
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if('error_empty' in request.args):
+			return render_template('search_account.html',username=session['username'],emp_type=session['type'],error_empty=True)
+		else:
+			return render_template('search_account.html', username=session['username'], emp_type=session['type'])
+	else:
+		return redirect(url_for('login'))
 
+@app.route('/display_search_account',methods=['GET','POST'])
+def display_search_account():
+	if request.method == 'GET':
+		return redirect(url_for('search_account'))
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if (request.method=='POST' and 'account_select' in request.form):
+			account_id = request.form['account_select']
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT * FROM account WHERE account_id = %s', (account_id,))
+			values_account_select = cursor.fetchone()
+			cust_id = values_account_select['customer_id']
+			cursor.execute('SELECT * FROM account WHERE customer_id = %s', (cust_id,))
+			values_customer = cursor.fetchall()
+			return render_template('display_search_account.html',values_account_select = values_account_select,values_customer = values_customer)
+		elif request.method == 'POST' and ('customer_id' or 'customer_ssn' or 'account_id' in request.form):
+			customer_id = request.form['customer_id']
+			customer_ssn = request.form['customer_ssn']
+			account_id = request.form['account_id']
+			# return render_template('display_search_account.html',a=customer_id,b=customer_ssn,c=account_id)
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			if(account_id == '' and customer_id == '' and customer_ssn == ''):
+				error_empty = True
+				return redirect(url_for('search_account',error_empty = error_empty))
+			if(account_id == '' and customer_id == ''):
+				cursor.execute('SELECT customer_id FROM customer WHERE customer_ssn = %s', (customer_ssn,))
+				values = cursor.fetchone()
+				customer_id = values['customer_id']
+			if(account_id == ''):
+				cursor.execute('SELECT * FROM account WHERE customer_id = %s', (customer_id,))
+				values_customer = cursor.fetchall()
+				return render_template('display_search_account.html',values_customer = values_customer)
+			else:
+				cursor.execute('SELECT * FROM account WHERE account_id = %s', (account_id,))
+				values_account = cursor.fetchone()
+				return render_template('display_search_account.html',values_account = values_account)
+		else:
+			return redirect(url_for('search_account'))
+	else:
+		redirect(url_for('login'))
