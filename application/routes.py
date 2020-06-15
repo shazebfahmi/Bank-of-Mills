@@ -205,11 +205,18 @@ def account_status():
 			return redirect('/account_status')
 		
 	return render_template("account_status.html",list=cust_list)
+	
+	
 ####delete customer page####
 @app.route('/delete_customer',methods=['GET','POST'])
 def delete_customer():
+	if('loggedin' not in session):
+		return redirect(url_for('login'))
+	if('loggedin' in session and session['type'] != 'executive'):
+		return redirect(url_for('home'))
 	checked = False
 	details = None
+	msg= ""
 	if  request.method =='POST' and request.form['btn']=='back':
 		return redirect('home')
 	if  request.method =='POST' and request.form['btn']=='d':
@@ -218,9 +225,11 @@ def delete_customer():
 			cursor2 = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			id2 = request.form['customer_id']
 			#print(id2)
-			query = "DELETE FROM customer where customer_id= "+ id2
+			#query = ""+ id2
 			#print("\n queru=y is : "+query)
-			cursor2.execute("DELETE FROM customer where customer_id = %s",(id2,))
+			timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+			
+			cursor2.execute("UPDATE customer_status set status = 0,message='customer deleted successfully', last_updated = %s  where customer_id = %s",(timestamp,id2))
 			cursor2.execute("COMMIT")
 			print('delete query executed')
 			flash('Deleted successfully','success')
@@ -228,15 +237,15 @@ def delete_customer():
 			
 		except:
 			print("in except of delete   ")
-		return render_template('delete_customer.html',checked = checked,details = details ) 	
+		return render_template('delete_customer.html',checked = checked,details = details,msg =msg ) 	
 		
 	if  request.method =='POST' and 'customer_id' in  request.form:
 		print('post detected and customer id was ', request.form['customer_id'] )
-		print('post detected and delete btn id was ', request.form['btn'] )
+		print('post detected and  btn id was ', request.form['btn'] )
 		id = request.form['customer_id']
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			query = "SELECT * FROM customer where customer_id= "+ id
+			query = "SELECT c.customer_id,c.customer_ssn,c.name, c.age, c.address,c.city, c.state FROM customer c, customer_status cs where c.customer_id = cs.customer_id and cs.status = 1 and c.customer_id ="+ id
 			cursor.execute(query)
 			print('query executed')
 			details = cursor.fetchone()
@@ -244,17 +253,18 @@ def delete_customer():
 			if(details is None):
 				print('deyail is none')
 				x = 'Could not search for the customer :'+  id
-				flash(x,'success')
-				return render_template('delete_customer.html',checked = checked)
+				msg =x
+				#flash(x,'success')
+				return render_template('delete_customer.html',checked = checked,msg=msg)
 			checked = True
 			#print(type(details),details)
 			
 		except Exception as e:
 			print("in except of retrieve  ")
-			#msg = "Could not search for the customer"
+			msg = "Could not search for the customer"
 	
 	
-	return render_template('delete_customer.html',checked = checked,details =details)
+	return render_template('delete_customer.html',checked = checked,details =details,msg=msg)
 	
 	
 	
