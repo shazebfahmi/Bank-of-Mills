@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 import MySQLdb
 import MySQLdb.cursors
 from application.forms import account
-import time
+from datetime import datetime
 import re
 
 mysql = MySQL(app)
@@ -63,8 +63,7 @@ def c_account():
 		cid = int(request.form['customer_id'])
 		acc_type = str(request.form['account_type'])
 		amount = int(request.form['amount'])
-		t = time.localtime(time.time())
-		last_updated = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
+		last_updated = str(datetime.utcnow())
 		details = 'account created successfully'
 		status = int('1')
 		try:
@@ -75,6 +74,7 @@ def c_account():
 				raise Exception('fail')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
+				cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 		except Exception as e:
