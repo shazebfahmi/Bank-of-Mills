@@ -142,7 +142,6 @@ def update():
 	if(request.method=='POST' and ('SSN' in request.form or 'CUSTOMER_ID' in request.form)) :
 		ssn=request.form['SSN']
 		Id=request.form['CUSTOMER_ID']
-		print(ssn,Id)
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
 		details = cursor.fetchone()
@@ -159,8 +158,8 @@ def update():
 		n_addr=request.form['new_address']
 		n_age=request.form['new_age']
 		Id=request.form['ID']
-		t = time.localtime(time.time())
-		timestamp = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
+		timestamp = timestamp = datetime.utcnow()
+		print(timestamp)
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		cursor.execute("UPDATE customer SET name = %s,address=%s,age=%s WHERE customer_id=%s",(n_name,n_addr,n_age,Id,))
 		cursor.execute("UPDATE customer_status SET message=%s WHERE customer_id=%s",("customer update complete",Id,))
