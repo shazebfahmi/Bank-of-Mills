@@ -3,12 +3,8 @@ from flask import Flask,redirect,url_for,flash,render_template,request,session
 from flask_mysqldb import MySQL 
 import MySQLdb
 import MySQLdb.cursors
-<<<<<<< HEAD
 import time
-=======
-from application.forms import account
-from datetime import datetime
->>>>>>> 55698b2bb7901c661075a45c3a6a098b4b86b7b5
+
 import re
 
 mysql = MySQL(app)
