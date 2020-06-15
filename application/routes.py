@@ -148,11 +148,13 @@ def update():
 		if(details is None):
 			flash("Could not find an account with given details","danger")
 			return redirect('/update_search')
+		print(details)
 	if request.method=='POST' and ('new_name' in request.form or 'new_age' in request.form or 'new_address' in request.form) :
 		n_name=request.form['new_name']
 		n_addr=request.form['new_address']
 		n_age=request.form['new_age']
 		Id=request.form['ID']
+		print(Id)
 		t = time.localtime(time.time())
 		timestamp = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -197,11 +199,14 @@ def customer_detail():
 		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
 		customer_detail1 = cursor.fetchone()
 		if(customer_detail1 is None):
-			flash("No user available with given SSN ID/Customer ID")
+			flash("No user available with given SSN ID/Customer ID","danger")
 			return redirect('/customer_search')
 		cust_id=customer_detail1['customer_id']
 		cursor.execute('SELECT * FROM customer_status WHERE customer_id = %s', (cust_id,))
 		customer_detail2=cursor.fetchone()
+		if(customer_detail2['status']!=1):
+			flash("Customer no longer exists exists","danger")
+			return redirect('/customer_search')
 		if 'loggedin' in session and session['type']=='executive':
 			return render_template("customer_detail.html",customer_detail1=customer_detail1 ,customer_detail2=customer_detail2)
 		return redirect(url_for('login'))
