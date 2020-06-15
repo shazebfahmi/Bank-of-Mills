@@ -222,18 +222,19 @@ def delete_customer():
 	if  request.method =='POST' and request.form['btn']=='back':
 		return redirect('home')
 	if  request.method =='POST' and request.form['btn']=='d':
-		#print("deleted query deetcted")
+		print("deleted query deetcted")
 		try:
 			cursor2 = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			id2 = request.form['customer_id']
-			#print(id2)
-			#query = ""+ id2
-			#print("\n queru=y is : "+query)
-			timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+			print("Hello this was customer id",id2)
 			
+			#print("\n queru=y is : "+query)
+			timestamp = datetime.utcnow()
+			print("after timestamp")
 			cursor2.execute("UPDATE customer_status set status = 0,message='customer deleted successfully', last_updated = %s  where customer_id = %s",(timestamp,id2))
+			print("delete query executed")
 			cursor2.execute("COMMIT")
-			print('delete query executed')
+			print('delete query committed')
 			flash('Deleted successfully','success')
 			cursor2.close()
 			
