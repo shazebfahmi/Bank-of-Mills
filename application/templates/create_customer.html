@@ -21,22 +21,22 @@
 
     <div class="form-group">
         <label >Name</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputName" pattern="[a-zA-Z]*" title="Please enter alphabetical name without special characters and name!" required >
+        <input type="text" class="form-control form-control-lg w-50" name="InputName" pattern="[a-zA-Z\s]*" title="Please enter alphabetical name without special characters and name!" required >
     </div>
 
     <div class="form-group">
         <label >Age</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputAge" pattern="[0-9][0-9][0-9]" title="Please enter 3 digit number! (For example : 022)" required>
+        <input type="number" class="form-control form-control-lg w-50" name="InputAge" min="18" max="120" required>
     </div>
 
     <div class="form-group">
         <label >Address Line1</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputAddress1" pattern="[a-zA-Z0-9\s]*" title="Please enter alphanumeric address without special characters!" required>
+        <input type="text" class="form-control form-control-lg w-50" name="InputAddress1" pattern="[a-zA-Z0-9\s,]*" title="Please enter alphanumeric address without special characters!" required>
     </div>
 
     <div class="form-group">
         <label>Address Line2</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputAddress2" pattern="[a-zA-Z0-9\s]*" title="Please enter alphanumeric address without special characters!" required>
+        <input type="text" class="form-control form-control-lg w-50" name="InputAddress2" pattern="[a-zA-Z0-9\s,]*" title="Please enter alphanumeric address without special characters!" required>
     </div>
 
     <div class="form-group">

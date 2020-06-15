@@ -3,7 +3,12 @@ from flask import Flask,redirect,url_for,flash,render_template,request,session
 from flask_mysqldb import MySQL 
 import MySQLdb
 import MySQLdb.cursors
+<<<<<<< HEAD
 import time
+=======
+from application.forms import account
+from datetime import datetime
+>>>>>>> 55698b2bb7901c661075a45c3a6a098b4b86b7b5
 import re
 
 mysql = MySQL(app)
@@ -43,6 +48,7 @@ def home():
 		return render_template('home2.html', username=session['username'],emp_type=session['type'])
 	return redirect(url_for('login'))
 
+
 @app.route('/customer_status',methods=['GET', 'POST'])
 def customer_status():
 	if('loggedin' not in session):
@@ -61,8 +67,7 @@ def c_account():
 		cid = int(request.form['customer_id'])
 		acc_type = str(request.form['account_type'])
 		amount = int(request.form['amount'])
-		t = time.localtime(time.time())
-		last_updated = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
+		last_updated = str(datetime.utcnow())
 		details = 'account created successfully'
 		status = int('1')
 		try:
@@ -73,6 +78,7 @@ def c_account():
 				raise Exception('fail')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
+				cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 		except Exception as e:
@@ -95,6 +101,7 @@ def create_customer():
 		InputSSN = details['InputSSN']
 		InputName = details['InputName']
 		InputAge = details['InputAge']
+		InputAge=str(InputAge)
 		InputAddress1 = details['InputAddress1']
 		InputAddress2 = details['InputAddress2']
 		InputAddress = InputAddress1 + " " + InputAddress2
@@ -119,13 +126,13 @@ def create_customer():
 			cur.close()
 
 		except Exception as e:
-			msg = "Could not insert into the table and please do not enter the existing Customer SSN ID"
+			msg = "Please enter a valid Customer SSN ID"
 
 
-		if 'loggedin' in session and session['type'] == 'executive':
+	if 'loggedin' in session and session['type'] == 'executive':
 			return render_template('create_customer.html', username=session['username'], emp_type=session['type'],
 								   msg=msg)
-	return render_template('create_customer.html')
+	return redirect(url_for('login'))
 
 
 ######## CUSTOMER UPDATE ########
@@ -173,7 +180,10 @@ def account_status():
 	details=cursor.fetchall()
 	if request.method=='POST' and 'refresh' in request.form :
 		return redirect('/account_status')
-	return render_template("account_status.html",details=details)
+	if 'loggedin' in session and session['type']=='executive':
+		return render_template("account_status.html",details=details)
+	return redirect(url_for('login'))
+	
 
 
 ##### CUSTOMER SEARCH ######### 
@@ -196,5 +206,67 @@ def customer_detail():
 		cust_id=customer_detail1['customer_id']
 		cursor.execute('SELECT * FROM customer_status WHERE customer_id = %s', (cust_id,))
 		customer_detail2=cursor.fetchone()
-		return render_template("customer_detail.html",customer_detail1=customer_detail1 ,customer_detail2=customer_detail2)
+		if 'loggedin' in session and session['type']=='executive':
+			return render_template("customer_detail.html",customer_detail1=customer_detail1 ,customer_detail2=customer_detail2)
+		return redirect(url_for('login'))
+		
+	
+
+
+##############
+
+####delete customer page####
+@app.route('/delete_customer',methods=['GET','POST'])
+def delete_customer():
+	checked = False
+	details = None
+	if  request.method =='POST' and request.form['btn']=='back':
+		return redirect('home')
+	if  request.method =='POST' and request.form['btn']=='d':
+		#print("deleted query deetcted")
+		try:
+			cursor2 = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			id2 = request.form['customer_id']
+			#print(id2)
+			query = "DELETE FROM customer where customer_id= "+ id2
+			#print("\n queru=y is : "+query)
+			cursor2.execute("DELETE FROM customer where customer_id = %s",(id2,))
+			cursor2.execute("COMMIT")
+			print('delete query executed')
+			flash('Deleted successfully','success')
+			cursor2.close()
+			
+		except:
+			print("in except of delete   ")
+		return render_template('delete_customer.html',checked = checked,details = details ) 	
+		
+	if  request.method =='POST' and 'customer_id' in  request.form:
+		print('post detected and customer id was ', request.form['customer_id'] )
+		print('post detected and delete btn id was ', request.form['btn'] )
+		id = request.form['customer_id']
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			query = "SELECT * FROM customer where customer_id= "+ id
+			cursor.execute(query)
+			print('query executed')
+			details = cursor.fetchone()
+			cursor.close()
+			if(details is None):
+				print('deyail is none')
+				x = 'Could not search for the customer :'+  id
+				flash(x,'success')
+				return render_template('delete_customer.html',checked = checked)
+			checked = True
+			#print(type(details),details)
+			
+		except Exception as e:
+			print("in except of retrieve  ")
+			#msg = "Could not search for the customer"
+	
+	
+	return render_template('delete_customer.html',checked = checked,details =details)
+	
+	
+	
+	
 
