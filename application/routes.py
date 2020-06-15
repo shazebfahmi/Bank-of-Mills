@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 import MySQLdb
 import MySQLdb.cursors
 from application.forms import account
-import time
+from datetime import datetime
 import re
 
 mysql = MySQL(app)
@@ -63,8 +63,7 @@ def c_account():
 		cid = int(request.form['customer_id'])
 		acc_type = str(request.form['account_type'])
 		amount = int(request.form['amount'])
-		t = time.localtime(time.time())
-		last_updated = str("%d-%d-%d %d:%d:%d" %(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec))
+		last_updated = str(datetime.utcnow())
 		details = 'account created successfully'
 		status = int('1')
 		try:
@@ -75,6 +74,7 @@ def c_account():
 				raise Exception('fail')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
+				cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 		except Exception as e:
@@ -97,6 +97,7 @@ def create_customer():
 		InputSSN = details['InputSSN']
 		InputName = details['InputName']
 		InputAge = details['InputAge']
+		InputAge=str(InputAge)
 		InputAddress1 = details['InputAddress1']
 		InputAddress2 = details['InputAddress2']
 		InputAddress = InputAddress1 + " " + InputAddress2
@@ -121,13 +122,13 @@ def create_customer():
 			cur.close()
 
 		except Exception as e:
-			msg = "Could not insert into the table and please do not enter the existing Customer SSN ID"
+			msg = "Please enter a valid Customer SSN ID"
 
 
-		if 'loggedin' in session and session['type'] == 'executive':
+	if 'loggedin' in session and session['type'] == 'executive':
 			return render_template('create_customer.html', username=session['username'], emp_type=session['type'],
 								   msg=msg)
-	return render_template('create_customer.html')
+	return redirect(url_for('login'))
 
 
 ######## CUSTOMER UPDATE ########
@@ -205,8 +206,9 @@ def account_status():
 			return redirect('/account_status')
 		
 	return render_template("account_status.html",list=cust_list)
-	
-	
+
+
+
 ####delete customer page####
 @app.route('/delete_customer',methods=['GET','POST'])
 def delete_customer():
@@ -269,3 +271,4 @@ def delete_customer():
 	
 	
 	
+
