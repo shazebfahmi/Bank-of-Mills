@@ -9,7 +9,7 @@
             <label style="text-align: left;"><b>Customer SSIN :</b> {{ details['customer_ssn'] }}</label><br>
             <label style="text-align: left;"><b>CUSTOMER ID</b>   :{{ details['customer_id'] }}</label></br></br>
             
-            <input type="hidden" name="ID" value="{{ customer_id }}">
+            <input type="hidden" name="ID" value="{{ details['customer_id'] }}">
             
             <label  style="text-align: left;"><b>New Customer Name</b> </label>
             <input type="text" placeholder="{{ details['name']}}" name="new_name" pattern="[a-zA-Z]*+" title="Please enter alphabetical name without special characters and name!" required><br></br>
