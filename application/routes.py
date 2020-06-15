@@ -44,6 +44,7 @@ def home():
 		return render_template('home2.html', username=session['username'],emp_type=session['type'])
 	return redirect(url_for('login'))
 
+
 @app.route('/customer_status',methods=['GET', 'POST'])
 def customer_status():
 	if('loggedin' not in session):
@@ -206,4 +207,61 @@ def account_status():
 		
 	return render_template("account_status.html",list=cust_list)
 
+
 ##############
+
+####delete customer page####
+@app.route('/delete_customer',methods=['GET','POST'])
+def delete_customer():
+	checked = False
+	details = None
+	if  request.method =='POST' and request.form['btn']=='back':
+		return redirect('home')
+	if  request.method =='POST' and request.form['btn']=='d':
+		#print("deleted query deetcted")
+		try:
+			cursor2 = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			id2 = request.form['customer_id']
+			#print(id2)
+			query = "DELETE FROM customer where customer_id= "+ id2
+			#print("\n queru=y is : "+query)
+			cursor2.execute("DELETE FROM customer where customer_id = %s",(id2,))
+			cursor2.execute("COMMIT")
+			print('delete query executed')
+			flash('Deleted successfully','success')
+			cursor2.close()
+			
+		except:
+			print("in except of delete   ")
+		return render_template('delete_customer.html',checked = checked,details = details ) 	
+		
+	if  request.method =='POST' and 'customer_id' in  request.form:
+		print('post detected and customer id was ', request.form['customer_id'] )
+		print('post detected and delete btn id was ', request.form['btn'] )
+		id = request.form['customer_id']
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			query = "SELECT * FROM customer where customer_id= "+ id
+			cursor.execute(query)
+			print('query executed')
+			details = cursor.fetchone()
+			cursor.close()
+			if(details is None):
+				print('deyail is none')
+				x = 'Could not search for the customer :'+  id
+				flash(x,'success')
+				return render_template('delete_customer.html',checked = checked)
+			checked = True
+			#print(type(details),details)
+			
+		except Exception as e:
+			print("in except of retrieve  ")
+			#msg = "Could not search for the customer"
+	
+	
+	return render_template('delete_customer.html',checked = checked,details =details)
+	
+	
+	
+	
+
