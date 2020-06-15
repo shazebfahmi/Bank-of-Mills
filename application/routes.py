@@ -339,3 +339,31 @@ def display_search_account():
 			return redirect(url_for('search_account'))
 	else:
 		redirect(url_for('login'))
+
+@app.route('/deposit_money',methods=['GET','POST'])
+def deposit_money():
+	msg = ''
+	if request.method == 'POST' and 'd_amount' in request.form and request.args:
+		cred = request.args.getlist('val')
+		cust_id = cred[0]
+		acc_id = cred[1]
+		acc_type = cred[2]
+		bal = cred[3]
+		amt = request.form['d_amount']
+		t_amt = int(amt) + int(bal)
+		ts = datetime.utcnow()
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cust_id, 'deposit', acc_type, amt))
+			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
+			mysql.connection.commit()
+			flash('Amount deposited successfully','success')
+			return redirect(url_for('login'))
+		except Exception as e:
+			print('Failed to deposit ' + str(e))
+			msg = 'could not deposit money...Please try again'
+	if 'loggedin' in session and session['type']=='cashier':
+		if request.args:
+			data = request.args.getlist('val')
+			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
+	return redirect(url_for('login'))
