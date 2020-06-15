@@ -96,6 +96,7 @@ def create_customer():
 		InputSSN = details['InputSSN']
 		InputName = details['InputName']
 		InputAge = details['InputAge']
+		InputAge=str(InputAge)
 		InputAddress1 = details['InputAddress1']
 		InputAddress2 = details['InputAddress2']
 		InputAddress = InputAddress1 + " " + InputAddress2
@@ -120,13 +121,13 @@ def create_customer():
 			cur.close()
 
 		except Exception as e:
-			msg = "Could not insert into the table and please do not enter the existing Customer SSN ID"
+			msg = "Please enter a valid Customer SSN ID"
 
 
-		if 'loggedin' in session and session['type'] == 'executive':
+	if 'loggedin' in session and session['type'] == 'executive':
 			return render_template('create_customer.html', username=session['username'], emp_type=session['type'],
 								   msg=msg)
-	return render_template('create_customer.html')
+	return redirect(url_for('login'))
 
 
 ######## CUSTOMER UPDATE ########
@@ -205,4 +206,4 @@ def account_status():
 		
 	return render_template("account_status.html",list=cust_list)
 
-############## 
+##############
