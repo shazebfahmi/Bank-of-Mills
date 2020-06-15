@@ -277,6 +277,10 @@ def delete_customer():
 			
 		except Exception as e:
 			print("in except of retrieve  ")
+			msg = "Could not search for the customer"
+	
+	
+	return render_template('delete_customer.html',checked = checked,details =details,msg=msg)
 
 
 @app.route('/delete_account',methods=['GET','POST'])
