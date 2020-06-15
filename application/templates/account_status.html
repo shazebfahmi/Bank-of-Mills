@@ -15,14 +15,14 @@
             <th>Last Updated</th>
             <th>Operations</th>
 
-        {% for i in list %}
+        {% for i in details %}
         <tr> 
-            <td>{{ i.customer_id }}</td>
-            <td>{{ i.account_id }}</td>
-            <td>{{ i.account_type }}</td>
-            <td>{{ i.account_status }}</td>
-            <td>{{ i.messages }}</td>
-            <td>{{ i.last_updated }}</td>
+            <td>{{ i['customer_id'] }}</td>
+            <td>{{ i['account_id'] }}</td>
+            <td>{{ i['account_type'] }}</td>
+            <td>{{ 'Active' if i['account_status']==1 else 'Pending'}}</td>
+            <td>{{ i['message'] }}</td>
+            <td>{{ i['last_updated'] }}</td>
             <td>
               <form action="{{url_for('account_status')}}" method="POST" >
                 <input type="hidden" name="refresh" value="{{i.account_id}}">
