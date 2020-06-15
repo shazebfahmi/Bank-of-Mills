@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 import MySQLdb
 import MySQLdb.cursors
 import time
-
+from datetime import datetime
 import re
 
 mysql = MySQL(app)
