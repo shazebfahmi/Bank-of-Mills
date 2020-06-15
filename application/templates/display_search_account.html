@@ -11,6 +11,13 @@
     {% block content%}
         <div class="container">
             <h2>Account Search Results</h2>
+            {% if error_empty %}
+                <div class="alert alert-danger">
+                    No results matching the search criteria.
+                </div>
+                <a href="{{ url_for('search_account') }}" class="btn btn-dark" role="button">Search again</a>
+            {% endif %}
+
             {% if values_customer %}
                 <h2>Customer ID - {{ values_customer[0]['customer_id'] }}</h2>
                 <form method="post" action="{{ url_for('display_search_account') }}">
@@ -40,7 +47,11 @@
                                 <td class="text-center">{{ values_account_select['account_id'] }}</td>
                             </tr>
                             <tr>
-                                <td class="text-center">Customer ID</td>
+                                <td class="text-center">Customer Name</td>
+                                <td class="text-center">{{ values_account_select['name'] }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Account Type</td>
                                 <td class="text-center">{{ values_account_select['account_type'] }}</td>
                             </tr>
                             <tr>
@@ -70,7 +81,11 @@
                                 <td class="text-center">{{ values_account['account_id'] }}</td>
                             </tr>
                             <tr>
-                                <td class="text-center">Customer ID</td>
+                                <td class="text-center">Customer Name</td>
+                                <td class="text-center">{{ values_account['name'] }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Account Type</td>
                                 <td class="text-center">{{ values_account['account_type'] }}</td>
                             </tr>
                             <tr>

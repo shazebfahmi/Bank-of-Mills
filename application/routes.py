@@ -298,23 +298,31 @@ def display_search_account():
 			customer_id = request.form['customer_id']
 			customer_ssn = request.form['customer_ssn']
 			account_id = request.form['account_id']
-			# return render_template('display_search_account.html',a=customer_id,b=customer_ssn,c=account_id)
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			if(account_id == '' and customer_id == '' and customer_ssn == ''):
 				error_empty = True
 				return redirect(url_for('search_account',error_empty = error_empty))
 			if(account_id == '' and customer_id == ''):
-				cursor.execute('SELECT customer_id FROM customer WHERE customer_ssn = %s', (customer_ssn,))
+				cursor.execute('SELECT C.customer_id,C.name FROM customer C,customer_status S WHERE C.customer_ssn = %s AND C.customer_id=S.customer_id AND S.status=1;', (customer_ssn,))
 				values = cursor.fetchone()
-				customer_id = values['customer_id']
+				if(values):
+					customer_id = values['customer_id']
+				else:
+					return render_template('display_search_account.html',error_empty=True)
 			if(account_id == ''):
-				cursor.execute('SELECT * FROM account WHERE customer_id = %s', (customer_id,))
+				cursor.execute('SELECT * FROM account A,customer C,customer_status S WHERE A.customer_id = C.customer_id AND C.customer_id = S.customer_id AND A.customer_id = %s AND S.status=1 AND A.status=1', (customer_id,))
 				values_customer = cursor.fetchall()
-				return render_template('display_search_account.html',values_customer = values_customer)
+				if(values_customer):
+					return render_template('display_search_account.html',values_customer = values_customer)
+				else:
+					return render_template('display_search_account.html', error_empty=True)
 			else:
-				cursor.execute('SELECT * FROM account WHERE account_id = %s', (account_id,))
+				cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id=C.customer_id AND account_id = %s AND status=1', (account_id,))
 				values_account = cursor.fetchone()
-				return render_template('display_search_account.html',values_account = values_account)
+				if(values_account):
+					return render_template('display_search_account.html',values_account = values_account)
+				else:
+					return render_template('display_search_account.html', error_empty=True)
 		else:
 			return redirect(url_for('search_account'))
 	else:
