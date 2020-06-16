@@ -23,19 +23,19 @@
                 <form action="{{ url_for('verify_balance_and_execute') }}" method="post">
 					
 					<div class="form-group">
-                    <h6>Name : </h6><input type="text" class="form-control form-control-lg w-50" name="name" value="{{ cus_name }}" readonly="readonly"  >
+                    <h6>Name : </h6><input type="text" class="form-control form-control-lg w-50" name="name" value="{{cus_name}}" readonly="readonly"  >
                   </div>
 				  
 				  <div class="form-group">
-                    <h6>Customer Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="cus_id" value="{{ cust_id }}" readonly="readonly"  >
+                    <h6>Customer Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="cus_id" value="{{cust_id}}" readonly="readonly"  >
                   </div>
 				  
 				   <div class="form-group">
-                    <h6>Account Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="acc_id" value="{{ acc_id }}" readonly="readonly"  >
+                    <h6>Account Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="acc_id" value="{{acc_id}}" readonly="readonly"  >
                   </div>
 				  
                   <div class="form-group">
-                    <h6>Source Account Type (this account) : </h6><input type="text" class="form-control form-control-lg w-50" name="s_acc" value="{{ acc_type }}" readonly="readonly" >
+                    <h6>Source Account Type (this account) : </h6><input type="text" class="form-control form-control-lg w-50" name="s_acc" value="{{acc_type}}" readonly="readonly" >
                   </div>
 				  <div class="form-group">
                     <h6>Destination Account Type : </h6><input type="text" class="form-control form-control-lg w-50" name="d_acc" 
@@ -43,7 +43,7 @@
                   </div>
 				  
 				  <div class="form-group">
-                    <h6>Balance : </h6><input type="text" class="form-control form-control-lg w-50" name="balance" value="{{ bal }}" readonly="readonly" >
+                    <h6>Balance : </h6><input type="text" class="form-control form-control-lg w-50" name="balance" value="{{bal}}" readonly="readonly" >
                   </div>
 				  
 				  <div class="form-group">

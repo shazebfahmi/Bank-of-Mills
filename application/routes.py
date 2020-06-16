@@ -286,7 +286,7 @@ def delete_customer():
 			#print(type(details),details)
 			
 		except Exception as e:
-			print("in except of retrieve  ")
+			print("in except of retrieve  :" +str(e))
 			msg = "Could not search for the customer"
 	
 	
@@ -498,32 +498,54 @@ def verify_balance_and_execute():
 		bal = request.form.get('balance')
 		amt = request.form.get('amount')
 		id =  request.form.get('cus_id')
-		acc_id =   request.form.get('acc_id')
+		acc_id =  request.form.get('acc_id')
 		name = request.form.get('name')
-		type = request.form.get('s_acc')
+		stype = request.form.get('s_acc')
+		dtype = request.form.get('d_acc')
 		
-		print("id in verify :",id)
+		print("cus id in verify :"+id+" bal : "+bal+" amt "+amt+" acc id "+acc_id+" name : "+name+" s type "+stype+" dtype :"+dtype)
 		if int(bal) - int(amt) < 1000:
-			flash("Cannot transfer, try again with lesser amount (from verify back redirection)",'success')
-			return redirect(url_for('transfer_money',val=(id,acc_id,name,type,bal) ) )
+			flash("Cannot transfer, try again with lesser amount",'success')
+			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
 		else:
-			new_bal = int(bal)- int(amt)
+			ts = datetime.utcnow()
 			try:
 				cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-				cursor.execute('SELECT account_id FROM account where customer_id = %s', (id,))
-				accs = cursor.fetchall()
-				if len(accs)!=2:
+				cursor.execute('update account set balance = %s , message = "account debited successfully" , last_updated = %s where account_id = %s  and status =1',(str(int(bal)-int(amt)),ts,acc_id))
+				cursor.execute('select balance,account_id from account where customer_id = %s and status=1 and account_type= %s ', (id,dtype))
+				abal = cursor.fetchall()
+				cbal = abal[0]['balance']
+				dacc_id = abal[0]['account_id']
+				print(cbal,type(cbal))
+				print("destiation acc no : ",dacc_id)
+				cursor.execute('update account set balance = %s , message = "account credited successfully" , last_updated = %s where account_type = %s and status =1',(str(cbal+int(amt)),ts,dtype))
+				
+				#for transactions table updation
+				#one = "insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values ('{0}','{1}','withdraw','{2}','{3}',{4})  ".format(id,acc_id,stype,ts,amt)
+				
+				#print(one)
+				
+				
+				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'withdraw',%s,%s,%s)  ",(id,acc_id,stype,ts,amt))
+				
+				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'deposit',%s,%s,%s)  ",(id,dacc_id,dtype,ts,amt))
+				
+				
+				
+				#cursor.execute('update account set balance = %d , message = "amount recieved successfully" , last_updated = %s where account_id != %s and status = 1 ', (int(bal)+diff,ts,acc_id))
+				#accs = cursor.fetchall()
+				'''if len(accs)!=2:
 					flash("Cannot transfer, ",'success')
-					return redirect(url_for('home'))
+					return redirect(url_for('home'))'''
 					
-				print("cursor val size :",len(accs))
+				#print("cursor val size :",len(accs))
 				mysql.connection.commit()
 				flash('Amount transferred successfully','success')
 				return redirect(url_for('login'))
 			except Exception as e:
-				print('Failed to deposit ' + str(e))
+				print('Failed to transfer :  ' + str(e))
 				msg = 'could not deposit money...Please try again'
-		print(type(bal),type(amt))
+		#print(type(bal),type(amt))
 		
 		
 		
