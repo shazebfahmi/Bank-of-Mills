@@ -488,3 +488,50 @@ def display_statement():
 			return redirect(url_for('login'))
 	else:
 		return redirect(url_for('login'))
+
+
+@app.route('/withdraw_money',methods=['POST'])
+def withdraw_money():
+	msg = ''
+	if request.method == 'POST' and 'w_amount' in request.form:
+		cust_id = request.form['cid']
+		acc_id = request.form['aid']
+		acc_type = request.form['a_type']
+		bal = request.form['balance']
+		amt = request.form['w_amount']
+		ts = datetime.utcnow()
+		try:
+			t_amt = int(bal) - int(amt)
+			if(t_amt<=1000):
+				msg="Please maintain a minimum balance of 1000"
+			else:
+				cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+				cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)',
+					(cust_id, acc_id, 'withdraw', acc_type, amt))
+				cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1',
+					(t_amt, 'amount withdrawn successfully', ts, acc_id))
+				mysql.connection.commit()
+				flash('Amount withdrawn successfully', 'success')
+				return redirect(url_for('login'))
+		except Exception as e:
+			print('Failed to withdraw ' + str(e))
+			msg = 'could not withdraw money...Please try again'
+	if 'loggedin' in session and session['type'] == 'cashier' and (
+			'cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
+		data = []
+		data.append(request.form['cid'])
+		data.append(request.form['aid'])
+		data.append(request.form['name'])
+		data.append(request.form['a_type'])
+		data.append(request.form['balance'])
+		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,
+							   data=data)
+	return redirect(url_for('login'))
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if request.args:
+			data = request.args.getlist('val')
+			return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'],
+								   msg=msg, data=data)
+	return redirect(url_for('login'))
+
+
