@@ -123,10 +123,9 @@ def create_customer():
 			mysql.connection.commit()
 			flash('Customer created successfully', 'success')
 			cur.close()
-
+			return redirect(url_for('login'))
 		except Exception as e:
 			msg = "Please enter a valid Customer SSN ID"
-
 
 	if 'loggedin' in session and session['type'] == 'executive':
 			return render_template('create_customer.html', username=session['username'], emp_type=session['type'],
@@ -149,12 +148,12 @@ def update():
 		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
 		details = cursor.fetchone()
 		if(details is None):
-			flash("Could not find an account with given details","danger")
+			flash("Could not find an account with given details!","danger")
 			return redirect('/update_search')
 		cursor.execute('SELECT status FROM customer_status WHERE customer_id = %s ', (details['customer_id'],))
 		details2=cursor.fetchone()
 		if(details2['status']!=1):
-			flash("Customer no longer exists exists","danger")
+			flash("Customer no longer exists exists!","danger")
 			return redirect('/update_search')
 	if request.method=='POST' and ('new_name' in request.form or 'new_age' in request.form or 'new_address' in request.form) :
 		n_name=request.form['new_name']

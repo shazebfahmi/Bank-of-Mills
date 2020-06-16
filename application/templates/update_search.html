@@ -1,16 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Customer</title>
+</head>
+<body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
 {% extends "cus_layout.html" %}
-
-{% block content %}
-
-<h3 style="text-align:center ; color: maroon;" ><b>SEARCH CUSTOMER TO UPDATE</b></h3></b3></br></br></br>
-   <div style="align-items: center; align-content: center; text-align: center;">
-      <form action="{{url_for('update')}}" method="POST">
-            <label style="margin-left: 20px ;margin-right: 40px ; color: rebeccapurple;"><b>SSN ID</b></label>
-            <input placeholder="Enter 9 digit Customer ID" type="number"  title="SSN ID must be a 9 digit numeric entry" name="SSN" value="SSN"></br></br>
-            <label style="margin-left: 30px;"><b>OR</b></label></br></br>
-            <label style="color: rebeccapurple;"><b>CUSTOMER ID</b></label>
-            <input type="number" placeholder="Enter 9 digit SSSN ID" title="CUSTOMER ID must be a 9 digit numeric entry" name="CUSTOMER_ID" value="CUSTOMER_ID"></br></br>
-         <button style="background-color:darkred ; color: floralwhite;">SEARCH</button>
+    {% block content%}
+    <div class="form_div" style="height:300px;">
+        <h2 class="text-center" style="margin-bottom:5%;">Edit Customer</h2>
+        <form action="{{url_for('update')}}" method="POST">
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer SSN : </label>
+                <div class="col-sm-5">
+                    <input placeholder="Customer SSN" type="number" title="SSN ID must be a 9 digit numeric entry" name="SSN" value="SSN"/>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer ID : </label>
+                <div class="col-sm-5">
+                    <input type="number" placeholder="Enter 9 digit SSSN ID" title="CUSTOMER ID must be a 9 digit numeric entry" name="CUSTOMER_ID" value="CUSTOMER_ID"/>
+                </div>
+            </div>
+            <div class="form-group text-center">
+                <label for="Submit"></label>
+                <input type="submit" class="btn btn-dark" id="Submit" />
+            </div>
       </form>
-</div>
+    </div>
 {% endblock %}
+</body>
+</html>

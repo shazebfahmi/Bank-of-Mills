@@ -3,61 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Customer</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
-<body>
+<body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
 {% extends "cus_layout.html" %}
 {% block content%}
-<br/>
-<div class="container">
-<form method="post" action="{{ url_for('create_customer') }}" name="cc">
+<div class="form_div">
+    <h2 class="text-center" style="margin-bottom:5%;">Create Customer</h2>
+    <form method="post" action="{{ url_for('create_customer') }}" name="cc">
 
-    <div class="form-group">
-        <label >Customer SSN ID</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputSSN" pattern="\d{9}" title="Please enter the nine digit Customer SSN ID" required>
-    </div>
+        {% if msg %}
+            <div class="alert alert-danger w-50" role="alert" style="margin: auto; margin-bottom:3%;">
+                {{ msg }}
+            </div>
+        {% endif %}
 
-    <div class="form-group">
-        <label >Name</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputName" pattern="[a-zA-Z\s]*" title="Please enter alphabetical name without special characters and name!" required >
-    </div>
-
-    <div class="form-group">
-        <label >Age</label>
-        <input type="number" class="form-control form-control-lg w-50" name="InputAge" min="18" max="120" required>
-    </div>
-
-    <div class="form-group">
-        <label >Address Line1</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputAddress1" pattern="[a-zA-Z0-9\s,]*" title="Please enter alphanumeric address without special characters!" required>
-    </div>
-
-    <div class="form-group">
-        <label>Address Line2</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputAddress2" pattern="[a-zA-Z0-9\s,]*" title="Please enter alphanumeric address without special characters!" required>
-    </div>
-
-    <div class="form-group">
-        <label >City</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputCity" required>
-    </div>
-
-    <div class="form-group">
-        <label >State</label>
-        <input type="text" class="form-control form-control-lg w-50" name="InputState" required>
-    </div>
-
-    {% if msg %}
-        <div class="alert alert-danger w-50" role="alert">
-            {{ msg }}
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer SSN : </label>
+        <div class="col-sm-5">
+            <input type="text" placeholder="Customer SSN" class="form-control" name="InputSSN" pattern="\d{9}" title="Please enter the nine digit Customer SSN" required>
         </div>
-    {% endif %}
+    </div>
 
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Name : </label>
+        <div class="col-sm-5">
+            <input type="text" placeholder="Customer Name" class="form-control" name="InputName" pattern="[a-zA-Z\s]*" title="Please enter alphabetical name without special characters!" required >
+        </div>
+    </div>
 
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Age : </label>
+        <div class="col-sm-5">
+            <input type="number" placeholder="Customer Age" class="form-control" name="InputAge" min="18" max="120" required>
+        </div>
+    </div>
 
-    <div class="form-group">
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Address Line 1 : </label>
+        <div class="col-sm-5">
+            <input type="text" placeholder="Customer Address Line 1" class="form-control" name="InputAddress1" pattern="[a-zA-Z0-9\s,]*" title="Please enter alphanumeric address without special characters!" required>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Address Line 2 : </label>
+        <div class="col-sm-5">
+            <input type="text" placeholder="Customer Address Line 2" class="form-control" name="InputAddress2" pattern="[a-zA-Z0-9\s,]*" title="Please enter alphanumeric address without special characters!" required>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">City : </label>
+        <div class="col-sm-5">
+            <input type="text" placeholder="City" class="form-control" name="InputCity" required>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">State : </label>
+        <div class="col-sm-5">
+            <input type="text" placeholder="State" class="form-control" name="InputState" required>
+        </div>
+    </div>
+
+    <div class="form-group text-center">
         <label for="Submit"></label>
         <input type="submit" class="btn btn-dark" id="Submit" />
     </div>
