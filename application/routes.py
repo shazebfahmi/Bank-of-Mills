@@ -68,10 +68,14 @@ def c_account():
 		status = int('1')
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s', (cid,acc_type))
+			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s and status = 1', (cid,acc_type))
 			res = cursor.fetchone()
+			cursor.execute('SELECT count(*) FROM customer_status WHERE customer_id = %s AND status = 1', (cid,))
+			res2 = cursor.fetchone()
 			if res['count(*)'] == 1:
 				raise Exception('fail')
+			elif res2['count(*)'] != 1:
+				raise Exception('nocus')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
 				cursor.execute('SELECT account_id FROM account WHERE customer_id = %s and account_type = %s', (cid, acc_type))
@@ -86,6 +90,8 @@ def c_account():
 				msg = 'Customer ID does not exist'
 			elif str(e) == 'fail':
 				msg = 'You already have ' + acc_type + ' account'
+			elif str(e) == 'nocus':
+				msg = 'Customer doesnot exist'
 			else:
 				msg = 'Could not create account...Please try again'
 	if 'loggedin' in session and session['type']=='executive':
