@@ -74,7 +74,10 @@ def c_account():
 				raise Exception('fail')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
-				cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cid, 'deposit', acc_type, amount))
+				cursor.execute('SELECT account_id FROM account WHERE customer_id = %s and account_type = %s', (cid, acc_type))
+				res = cursor.fetchone()
+				aid = res['account_id']
+				cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)', (cid, aid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 		except Exception as e:
