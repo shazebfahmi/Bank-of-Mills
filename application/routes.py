@@ -421,8 +421,7 @@ def deposit_money():
 		except Exception as e:
 			print('Failed to deposit ' + str(e))
 			msg = 'could not deposit money...Please try again'
-	if 'loggedin' in session and session['type']=='cashier':
-		if request.args:
-			data = request.args.getlist('val')
-			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
+	if 'loggedin' in session and session['type']=='cashier' and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
+		print(request.form['cid'],request.form['aid'],request.form['name'],request.form['a_type'],request.form['balance'])
+		return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg)
 	return redirect(url_for('login'))
