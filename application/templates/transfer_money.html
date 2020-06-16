@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="utf-8">
+		<title>Transfer Money</title>
+		 <link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    </head>
+    <body>
+        {% extends "cas_layout.html" %}
+
+        {% block content%}
+
+		
+        <div class="row">
+            <div class="container">
+                <h2>Transfer Money </h2>
+				{% if msg %}
+                        <div class="alert alert-danger w-50" role="alert">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                <form action="{{ url_for('verify_balance_and_execute') }}" method="post">
+					
+					<div class="form-group">
+                    <h6>Name : </h6><input type="text" class="form-control form-control-lg w-50" name="name" value="{{cus_name}}" readonly="readonly"  >
+                  </div>
+				  
+				  <div class="form-group">
+                    <h6>Customer Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="cus_id" value="{{cust_id}}" readonly="readonly"  >
+                  </div>
+				  
+				   <div class="form-group">
+                    <h6>Account Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="acc_id" value="{{acc_id}}" readonly="readonly"  >
+                  </div>
+				  
+                  <div class="form-group">
+                    <h6>Source Account Type (this account) : </h6><input type="text" class="form-control form-control-lg w-50" name="s_acc" value="{{acc_type}}" readonly="readonly" >
+                  </div>
+				  <div class="form-group">
+                    <h6>Destination Account Type : </h6><input type="text" class="form-control form-control-lg w-50" name="d_acc" 
+					value={% if acc_type=='savings' %}"current"{% else %}"savings"{%endif%} }} readonly="readonly" >
+                  </div>
+				  
+				  <div class="form-group">
+                    <h6>Balance : </h6><input type="text" class="form-control form-control-lg w-50" name="balance" value="{{bal}}" readonly="readonly" >
+                  </div>
+				  
+				  <div class="form-group">
+                    <h6>Enter Amount  : </h6><input type="text" class="form-control form-control-lg w-50" name="amount" placeholder="  Enter Amount " required>
+                  </div>
+				  {{ val }}
+				
+                    {% if msg %}
+                        <div class="alert alert-danger w-50" role="alert">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                  <button type="submit" value="transfer_btn"  name="btn" class="btn btn-primary">Initiate Transfer </button>
+				  </form><br>
+				  
+					<a href="{{ url_for('display_search_account') }}"><button value="back"  name="btn" class="btn btn-primary">Go Back  </button></a>
+				
+					
+                
+
+            </div>
+        </div>
+		
+		
+        {% endblock %}
+
+    </body>
+</html>
