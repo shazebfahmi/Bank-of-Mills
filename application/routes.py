@@ -120,7 +120,7 @@ def create_customer():
 			cur.execute(
 				"INSERT INTO customer( customer_ssn, name, age, address, city, state) VALUES (%s, %s, %s, %s, %s, %s)",
 				(InputSSN, InputName, InputAge, InputAddress, InputCity, InputState))
-			timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+			timestamp = datetime.utcnow()
 			cur.execute("SELECT customer_id from customer where customer_ssn=" + InputSSN)
 			res = cur.fetchone()
 			cust_id = res["customer_id"]
