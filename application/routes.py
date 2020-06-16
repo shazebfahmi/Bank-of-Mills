@@ -426,3 +426,57 @@ def deposit_money():
 			data = request.args.getlist('val')
 			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
+
+@app.route('/account_statement')
+def account_statement():
+	if('loggedin' in session and session['type'] == 'cashier'):
+		return render_template('account_statement.html',username=session['username'],emp_type=session['type'])
+	else:
+		return redirect(url_for('login'))
+
+@app.route('/display_statement',methods=['POST'])
+def display_statement():
+	if('loggedin' in session and session['type'] == 'cashier'):
+		if(request.method == 'POST' and 'account_id' in request.form):
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			account_id = request.form['account_id']
+			radio_option = request.form['radio_options']
+			if(radio_option == 'last'):
+				if('num_transactions' not in request.form):
+					flash("Please enter the number of transactions to be fetched.", 'danger')
+					return redirect(url_for('account_statement'))
+				count = request.form['num_transactions']
+				val = 'SELECT * FROM transactions WHERE account_id = %s ORDER BY time DESC LIMIT %s ' % (account_id,count)
+				# return render_template('display_statement.html', bla=val)
+				cursor.execute(val)
+				transactions = cursor.fetchall()
+				if(transactions):
+					return render_template('display_statement.html',transactions=transactions)
+				else:
+					flash("No transactions found.",'danger')
+					return redirect(url_for('account_statement'))
+			else:
+				start_date = request.form['start_date']
+				end_date = request.form['end_date']
+				if(start_date == '' or end_date==''):
+					flash("Please enter the start and end dates.", 'danger')
+					return redirect(url_for('account_statement'))
+				start_date+=' 00:00:01'
+				end_date += ' 23:59:59'
+				start_check = datetime.strptime(start_date,'%Y-%m-%d %H:%M:%S')
+				end_check = datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')
+				if(start_check > end_check):
+					flash("Start date is greater than End date.", 'danger')
+					return redirect(url_for('account_statement'))
+				query = 'SELECT * FROM transactions WHERE (time BETWEEN "%s" AND "%s" AND account_id = %s) ORDER BY time DESC' % (start_date,end_date,account_id)
+				cursor.execute(query)
+				transactions = cursor.fetchall()
+				if(transactions):
+					return render_template('display_statement.html',transactions = transactions)
+				else:
+					flash("No transactions found between the specified dates", 'danger')
+					return redirect(url_for('account_statement'))
+		else:
+			return redirect(url_for('login'))
+	else:
+		return redirect(url_for('login'))
