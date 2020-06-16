@@ -281,6 +281,61 @@ def delete_customer():
 	
 	
 	return render_template('delete_customer.html',checked = checked,details =details,msg=msg)
+
+
+@app.route('/delete_account',methods=['GET','POST'])
+def delete_account():
+	msg=""
+	if request.method=='POST' and ('account_id' in request.form) :
+		account_id=request.form['account_id']
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT * FROM account WHERE account_id = %s and status=1 ', (account_id,))
+			details = cursor.fetchone()
+			acc_id = details['account_id']
+			cust_id = details['customer_id']
+			acc_type = details['account_type']
+			bal = details['balance']
+			message = details['message']
+			acc_created = details['account_created']
+			last_updated = details['last_updated']
+			status = details['status']
+			mysql.connection.commit()
+			cursor.close()
+
+			return render_template('del_acc_details.html', acc_id=acc_id, cust_id=cust_id, acc_type=acc_type, bal=bal,
+											   message=message, acc_created=acc_created, last_updated=last_updated, status=status)
+
+		except Exception as e:
+			msg="Please enter valid Account Id"
+
+	if 'loggedin' in session and session['type'] == 'executive':
+		return render_template('delete_account.html', username=session['username'], emp_type=session['type'], msg=msg)
+
+	return redirect(url_for('login'))
+
+@app.route('/del_acc_details',methods=['GET','POST'])
+def delete_account_details():
+	msg = ""
+	if request.method == 'POST' and ('acc_id' in request.form ):
+		account_id = request.form['acc_id']
+
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('UPDATE account SET status=0 WHERE account_id = %s ', (account_id,))
+			cursor.execute('UPDATE account SET message="account deleted successfully" WHERE account_id = %s ', (account_id,))
+			mysql.connection.commit()
+			flash('Customer account deleted successfully', 'success')
+			cur.close()
+		except Exception as e:
+			msg="Could not delete, Please try again later!"
+
+	if 'loggedin' in session and session['type'] == 'executive':
+		return render_template('del_acc_details.html', username=session['username'], emp_type=session['type'], msg=msg)
+
+	return redirect(url_for('login'))
+
+
 	
 @app.route('/search_account')
 def search_account():
@@ -291,6 +346,7 @@ def search_account():
 			return render_template('search_account.html', username=session['username'], emp_type=session['type'])
 	else:
 		return redirect(url_for('login'))
+
 
 @app.route('/display_search_account',methods=['GET','POST'])
 def display_search_account():
@@ -339,3 +395,31 @@ def display_search_account():
 			return redirect(url_for('search_account'))
 	else:
 		redirect(url_for('login'))
+
+@app.route('/deposit_money',methods=['GET','POST'])
+def deposit_money():
+	msg = ''
+	if request.method == 'POST' and 'd_amount' in request.form and request.args:
+		cred = request.args.getlist('val')
+		cust_id = cred[0]
+		acc_id = cred[1]
+		acc_type = cred[2]
+		bal = cred[3]
+		amt = request.form['d_amount']
+		t_amt = int(amt) + int(bal)
+		ts = datetime.utcnow()
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cust_id, 'deposit', acc_type, amt))
+			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
+			mysql.connection.commit()
+			flash('Amount deposited successfully','success')
+			return redirect(url_for('login'))
+		except Exception as e:
+			print('Failed to deposit ' + str(e))
+			msg = 'could not deposit money...Please try again'
+	if 'loggedin' in session and session['type']=='cashier':
+		if request.args:
+			data = request.args.getlist('val')
+			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
+	return redirect(url_for('login'))

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+        <meta charset="utf-8">
+		<title>Home</title>
+<!--		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+	{% extends "cas_layout.html" %}
+	{% block content%}
+		<div class="container">
+			<h3>Deposit money</h3>
+			{% if data %}
+				<h6>Customer ID :</h6>{{data[0]}}
+				<h6>Account ID  :</h6>{{data[1]}}
+				<h6>Name        :</h6>{{data[2]}}
+				<h6>Account type:</h6>{{data[3]}}
+				<h6>Banalce     :</h6>{{data[4]}}		
+			{% endif %}
+			<form action="{{ url_for('deposit_money', val = (data[0], data[1], data[3], data[4])) }}" method="post">
+                  <div class="form-group">
+                    <input type="number" class="form-control form-control-lg w-50" name="d_amount" placeholder="Enter amount to deposit" min = "1" required>
+                  </div>
+                    {% if msg %}
+                        <div class="alert alert-danger w-50" role="alert">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                  <button type="submit" class="btn btn-primary">Deposit</button>
+            </form>
+		</div>
+	{% endblock %}
+</body>
+</html>
