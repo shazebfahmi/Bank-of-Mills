@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Statement</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+    {% extends "cas_layout.html" %}
+    {% block content %}
+        <div class="container">
+            <h1>Account Statement</h1>
+            {% if transactions %}
+                <h2 class="text-center">Account ID - {{ transactions[0]['account_id'] }}</h2>
+                <h2 class="text-center">Account Type - {{ transactions[0]['acc_type'] }}</h2>
+                <div class="table-responsive" style="margin-top:30px;">
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center">Transaction ID</th>
+                                <th class="text-center">Description</th>
+                                <th class="text-center">Date and Time</th>
+                                <th class="text-center">Amount</th>
+                            </tr>
+                        </thead>
+                        {% for value in transactions %}
+                        <tr>
+                            <td class="text-center">{{ value['transaction_id'] }}</td>
+                            <td class="text-center">{{ value['description'] }}</td>
+                            <td class="text-center">{{ value['time'] }}</td>
+                            <td class="text-center">{{ value['amount'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endif %}
+            <div style="text-align:center;margin-top:30px;">
+                <a href="#" class="btn btn-dark" role="button">Download as PDF</a>
+                <a href="#" class="btn btn-dark" role="button">Download as Excel File</a>
+            </div>
+        </div>
+    {% endblock %}
+</body>
+</html>
