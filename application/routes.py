@@ -329,7 +329,7 @@ def delete_account_details():
 			cursor.execute('UPDATE account SET message="account deleted successfully" WHERE account_id = %s ', (account_id,))
 			mysql.connection.commit()
 			flash('Customer account deleted successfully', 'success')
-			cur.close()
+			cursor.close()
 		except Exception as e:
 			msg="Could not delete, Please try again later!"
 
@@ -402,18 +402,17 @@ def display_search_account():
 @app.route('/deposit_money',methods=['GET','POST'])
 def deposit_money():
 	msg = ''
-	if request.method == 'POST' and 'd_amount' in request.form and request.args:
-		cred = request.args.getlist('val')
-		cust_id = cred[0]
-		acc_id = cred[1]
-		acc_type = cred[2]
-		bal = cred[3]
+	if request.method == 'POST' and 'd_amount' in request.form:
+		cust_id = request.form['cid']
+		acc_id = request.form['aid']
+		acc_type = request.form['a_type']
+		bal = request.form['balance']
 		amt = request.form['d_amount']
-		t_amt = int(amt) + int(bal)
 		ts = datetime.utcnow()
 		try:
+			t_amt = int(amt) + int(bal)
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cust_id, 'deposit', acc_type, amt))
+			cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)', (cust_id, acc_id, 'deposit', acc_type, amt))
 			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
 			mysql.connection.commit()
 			flash('Amount deposited successfully','success')
@@ -422,8 +421,13 @@ def deposit_money():
 			print('Failed to deposit ' + str(e))
 			msg = 'could not deposit money...Please try again'
 	if 'loggedin' in session and session['type']=='cashier' and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
-		print(request.form['cid'],request.form['aid'],request.form['name'],request.form['a_type'],request.form['balance'])
-		return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg)
+		data = []
+		data.append(request.form['cid'])
+		data.append(request.form['aid'])
+		data.append(request.form['name'])
+		data.append(request.form['a_type'])
+		data.append(request.form['balance'])
+		return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
 	if 'loggedin' in session and session['type']=='cashier':
 		if request.args:
