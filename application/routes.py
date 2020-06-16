@@ -248,10 +248,11 @@ def delete_customer():
 			timestamp = datetime.utcnow()
 			print("after timestamp")
 			cursor2.execute("UPDATE customer_status set status = 0,message='customer deleted successfully', last_updated = %s  where customer_id = %s",(timestamp,id2))
+			cursor2.execute("update account set status = 0,message='account deleted successfully *',last_updated = %s where customer_id = %s ",(timestamp,id2))
 			print("delete query executed")
 			cursor2.execute("COMMIT")
 			print('delete query committed')
-			flash('Deleted successfully','success')
+			flash('Customer and all related accounts deleted successfully','success')
 			cursor2.close()
 			
 		except:
@@ -426,3 +427,95 @@ def deposit_money():
 			data = request.args.getlist('val')
 			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
+	
+	
+@app.route('/transfer_money',methods=['GET','POST'])
+def transfer_money():
+	msg=''
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if request.form.get('btn') == 'transfer_btn':
+			amount = request.form.get('amount')
+			
+			bal = request.form.get('balance')
+			
+			print("amount enterred = "+amount+" balance is : "+bal)
+			if (int(bal) - int(amount)) < 1000:
+				msg = 'Amount cannot be transfered, to maintain minimum balance (try smaller amount)'
+				print("masg updated")
+			
+				
+			#return render_template('transfer_money.html',msg=msg)
+			
+			
+		
+		cred = request.args.getlist('val')
+		print(cred,type(cred))
+		cust_id = cred[0]
+		acc_id = cred[1]
+		cus_name = cred[2]
+		acc_type = cred[3]
+		bal = cred[4]
+		
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (cust_id,))
+			accs = cursor.fetchall()
+			if len(accs)!=2:
+				flash("Cannot transfer, since only one type of account exists, for this customer ",'success')
+				return redirect(url_for('home'))
+		except:
+			print("diugfjkf")
+			
+		
+		print(" Customer id = "+str(cust_id)+" Account id "+acc_id+"  account type" + acc_type+ " bal : "+bal)
+		
+			
+		return render_template('transfer_money.html',cust_id=cust_id,acc_id=acc_id,cus_name=cus_name,acc_type=acc_type,bal=bal,msg=msg)
+		
+	else:
+		return redirect(url_for('login'))
+
+
+@app.route('/verify_balance_and_execute',methods=['GET','POST'])
+def verify_balance_and_execute():
+
+	if 'loggedin' in session and session['type'] == 'cashier':
+		bal = request.form.get('balance')
+		amt = request.form.get('amount')
+		id =  request.form.get('cus_id')
+		acc_id =   request.form.get('acc_id')
+		name = request.form.get('name')
+		type = request.form.get('s_acc')
+		
+		print("id in verify :",id)
+		if int(bal) - int(amt) < 1000:
+			flash("Cannot transfer, try again with lesser amount (from verify back redirection)",'success')
+			return redirect(url_for('transfer_money',val=(id,acc_id,name,type,bal) ) )
+		else:
+			new_bal = int(bal)- int(amt)
+			try:
+				cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+				cursor.execute('SELECT account_id FROM account where customer_id = %s', (id,))
+				accs = cursor.fetchall()
+				if len(accs)!=2:
+					flash("Cannot transfer, ",'success')
+					return redirect(url_for('home'))
+					
+				print("cursor val size :",len(accs))
+				mysql.connection.commit()
+				flash('Amount transferred successfully','success')
+				return redirect(url_for('login'))
+			except Exception as e:
+				print('Failed to deposit ' + str(e))
+				msg = 'could not deposit money...Please try again'
+		print(type(bal),type(amt))
+		
+		
+		
+		
+		return redirect(url_for('home'))
+		
+	else:
+		return redirect(url_for('login'))
+
+
