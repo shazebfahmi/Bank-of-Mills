@@ -68,10 +68,14 @@ def c_account():
 		status = int('1')
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s', (cid,acc_type))
+			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s and status = 1', (cid,acc_type))
 			res = cursor.fetchone()
+			cursor.execute('SELECT count(*) FROM customer_status WHERE customer_id = %s AND status = 1', (cid,))
+			res2 = cursor.fetchone()
 			if res['count(*)'] == 1:
 				raise Exception('fail')
+			elif res2['count(*)'] != 1:
+				raise Exception('nocus')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
 				cursor.execute('SELECT account_id FROM account WHERE customer_id = %s and account_type = %s', (cid, acc_type))
@@ -86,6 +90,8 @@ def c_account():
 				msg = 'Customer ID does not exist'
 			elif str(e) == 'fail':
 				msg = 'You already have ' + acc_type + ' account'
+			elif str(e) == 'nocus':
+				msg = 'Customer doesnot exist'
 			else:
 				msg = 'Could not create account...Please try again'
 	if 'loggedin' in session and session['type']=='executive':
@@ -330,7 +336,7 @@ def delete_account_details():
 			cursor.execute('UPDATE account SET message="account deleted successfully" WHERE account_id = %s ', (account_id,))
 			mysql.connection.commit()
 			flash('Customer account deleted successfully', 'success')
-			cur.close()
+			cursor.close()
 		except Exception as e:
 			msg="Could not delete, Please try again later!"
 
@@ -403,18 +409,17 @@ def display_search_account():
 @app.route('/deposit_money',methods=['GET','POST'])
 def deposit_money():
 	msg = ''
-	if request.method == 'POST' and 'd_amount' in request.form and request.args:
-		cred = request.args.getlist('val')
-		cust_id = cred[0]
-		acc_id = cred[1]
-		acc_type = cred[2]
-		bal = cred[3]
+	if request.method == 'POST' and 'd_amount' in request.form:
+		cust_id = request.form['cid']
+		acc_id = request.form['aid']
+		acc_type = request.form['a_type']
+		bal = request.form['balance']
 		amt = request.form['d_amount']
-		t_amt = int(amt) + int(bal)
 		ts = datetime.utcnow()
 		try:
+			t_amt = int(amt) + int(bal)
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('INSERT INTO transactions (customer_id, description, d_acc, amount) VALUES (%s, %s, %s, %s)', (cust_id, 'deposit', acc_type, amt))
+			cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)', (cust_id, acc_id, 'deposit', acc_type, amt))
 			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
 			mysql.connection.commit()
 			flash('Amount deposited successfully','success')
@@ -422,11 +427,21 @@ def deposit_money():
 		except Exception as e:
 			print('Failed to deposit ' + str(e))
 			msg = 'could not deposit money...Please try again'
+	if 'loggedin' in session and session['type']=='cashier' and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
+		data = []
+		data.append(request.form['cid'])
+		data.append(request.form['aid'])
+		data.append(request.form['name'])
+		data.append(request.form['a_type'])
+		data.append(request.form['balance'])
+		return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
+	return redirect(url_for('login'))
 	if 'loggedin' in session and session['type']=='cashier':
 		if request.args:
 			data = request.args.getlist('val')
 			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
+
 	
 	
 @app.route('/transfer_money',methods=['GET','POST'])
@@ -519,3 +534,57 @@ def verify_balance_and_execute():
 		return redirect(url_for('login'))
 
 
+
+@app.route('/account_statement')
+def account_statement():
+	if('loggedin' in session and session['type'] == 'cashier'):
+		return render_template('account_statement.html',username=session['username'],emp_type=session['type'])
+	else:
+		return redirect(url_for('login'))
+
+@app.route('/display_statement',methods=['POST'])
+def display_statement():
+	if('loggedin' in session and session['type'] == 'cashier'):
+		if(request.method == 'POST' and 'account_id' in request.form):
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			account_id = request.form['account_id']
+			radio_option = request.form['radio_options']
+			if(radio_option == 'last'):
+				if('num_transactions' not in request.form):
+					flash("Please enter the number of transactions to be fetched.", 'danger')
+					return redirect(url_for('account_statement'))
+				count = request.form['num_transactions']
+				val = 'SELECT * FROM transactions WHERE account_id = %s ORDER BY time DESC LIMIT %s ' % (account_id,count)
+				# return render_template('display_statement.html', bla=val)
+				cursor.execute(val)
+				transactions = cursor.fetchall()
+				if(transactions):
+					return render_template('display_statement.html',transactions=transactions)
+				else:
+					flash("No transactions found.",'danger')
+					return redirect(url_for('account_statement'))
+			else:
+				start_date = request.form['start_date']
+				end_date = request.form['end_date']
+				if(start_date == '' or end_date==''):
+					flash("Please enter the start and end dates.", 'danger')
+					return redirect(url_for('account_statement'))
+				start_date+=' 00:00:01'
+				end_date += ' 23:59:59'
+				start_check = datetime.strptime(start_date,'%Y-%m-%d %H:%M:%S')
+				end_check = datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')
+				if(start_check > end_check):
+					flash("Start date is greater than End date.", 'danger')
+					return redirect(url_for('account_statement'))
+				query = 'SELECT * FROM transactions WHERE (time BETWEEN "%s" AND "%s" AND account_id = %s) ORDER BY time DESC' % (start_date,end_date,account_id)
+				cursor.execute(query)
+				transactions = cursor.fetchall()
+				if(transactions):
+					return render_template('display_statement.html',transactions = transactions)
+				else:
+					flash("No transactions found between the specified dates", 'danger')
+					return redirect(url_for('account_statement'))
+		else:
+			return redirect(url_for('login'))
+	else:
+		return redirect(url_for('login'))
