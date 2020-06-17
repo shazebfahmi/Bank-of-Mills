@@ -24,3 +24,46 @@ table,th,td{
 .error {
     color: red
 }
+
+.img_icon {
+    margin-left:15px;
+}
+
+.login_div {
+    background-color:#FFF;
+    width:60%;
+    height:400px;
+    margin: auto;
+    padding: 10px;
+    margin-top:3%;
+    border-radius:10px;
+}
+
+.form_div {
+    background-color:#FFF;
+    width:60%;
+    margin: auto;
+    padding: 10px;
+    margin-top:3%;
+    border-radius:10px;
+}
+
+.table_div {
+    background-color:#FFF;
+    width:95%;
+    margin: auto;
+    padding: 30px;
+    margin-top:3%;
+    border-radius:15px;
+}
+
+.wrapper {
+    text-align:center;
+}
+
+.login_text {
+}
+
+.login_inp {
+    border-radius:10px;
+}

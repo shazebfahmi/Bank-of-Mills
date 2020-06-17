@@ -1,52 +1,54 @@
-
 <head>
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/hover.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 
-
-<header>
-	<nav style="color:blue">
-		<ul class="nav nav-pills" >
-				
-			<li><a class="dropbtn" style="background:darkgreen" href="{{ url_for('home') }}" class="nav-link active">Home</a></li>
-			
-			<div class="dropdown">
-			<li><a class="dropbtn" style="background:darkgreen" href="{{ url_for('login') }}" class="nav-link active">Customer Management</a></li>
-				<div class="dropdown-content">
-
-					<a href= "{{ url_for('create_customer') }}"><h3>Create New Customer</h3	></a>
-					<a href= "{{ url_for('update_search') }}"><h3>Edit Customer</h3></a>
-					<a href= "{{ url_for('delete_customer') }}"><h3>Delete Customer</h3></a>
-					<a href= "{{ url_for('customer_status') }}"><h3>View Customer Status</h3></a>
-				</div>
-			</div>			
-			
-			<div class="dropdown">
-			<li><a class="dropbtn" style="background:darkgreen" href="{{ url_for('login') }}" class="nav-link active">Account Management</a></li>
-				<div class="dropdown-content">
-					<a href= "{{ url_for('c_account') }}"><h3>Create New Account</h3></a>
-					<a href= "{{ url_for('delete_account') }}"><h3>Delete Account</h3></a>
-				</div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<a href="#" class="navbar-brand">
+		<img src="{{ url_for('static', filename = 'images/icon.png')}}" width="40" height="40" class="d-inline-block align-top" style="margin-right:3%">
+		Digital Bank
+	</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    	<span class="navbar-toggler-icon"></span>
+  	</button>
+	<div class="collapse navbar-collapse" id="navbarSupportedContent" style="margin-left:4%">
+		<ul class="navbar-nav mr-auto">
+		  <li class="nav-item active">
+			<a class="nav-link" href="{{ url_for('home') }}">Home<span class="sr-only">(current)</span></a>
+		  </li>
+		  <li class="nav-item dropdown">
+			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			  Customer Management
+			</a>
+			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			  <a class="dropdown-item" href="{{ url_for('create_customer') }}">Create New Customer</a>
+			  <a class="dropdown-item" href="{{ url_for('update_search') }}">Edit Customer</a>
+			  <a class="dropdown-item" href="{{ url_for('delete_customer') }}">Delete Customer</a>
+				<a class="dropdown-item" href="{{ url_for('customer_status') }}">Customer Status</a>
 			</div>
-			
-			<div class="dropdown">
-			<li><a class="dropbtn" style="background:darkgreen" href="{{ url_for('login') }}" class="nav-link active ">Status Details</a></li>
-				<div class="dropdown-content">
-					<a href= "{{ url_for('login') }}"><h3>Customer Status</h3></a>
-					<a href= "{{ url_for('account_status') }}"><h3>Account Status</h3></a>
-				</div>
+		  </li>
+		  <li class="nav-item dropdown">
+			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			  Account Management
+			</a>
+			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			  <a class="dropdown-item" href="{{ url_for('c_account') }}">Create New Account</a>
+			  <a class="dropdown-item" href="{{ url_for('delete_account') }}">Delete Account</a>
+				<a class="dropdown-item" href="{{ url_for('account_status') }}">Account Status</a>
 			</div>
-			
-		
-			{% if session['username'] %}
-			
-			
-			<li><a style="background:darkgreen" href="{{ url_for('logout') }}" class="nav-link active">Logout</a></li>
-			
-			
-			{% endif %}
-
+		  </li>
 		</ul>
-	</nav>
-	<hr style="clear:both">
-</header>
+		<ul class="nav justify-content-end">
+			{% if session['username'] %}
+			<li class="nav-item ">
+        		<a class="nav-link" href="{{ url_for('logout') }}" style="color:white;">Logout</a>
+      		</li>
+			{% endif %}
+		</ul>
+  </div>
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

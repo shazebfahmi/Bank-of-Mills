@@ -3,50 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <title>Delete Account Details</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
-    <body>
+    <body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
         {% extends "cus_layout.html" %}
         {% block content%}
-        <table class="table">
-            <thead>
+        <div class="table_div">
+            <h2 class="text-center" style="margin:1% 0 3% 0;">Account Details</h2>
+            <div class="table-responsive" style="margin-top:30px;">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center" scope="col">Account ID</th>
+                        <th class="text-center" scope="col">Customer ID</th>
+                        <th class="text-center" scope="col">Account Type</th>
+                        <th class="text-center" scope="col">Balance</th>
+                        <th class="text-center" scope="col">Message</th>
+                        <th class="text-center" scope="col">Account Created</th>
+                        <th class="text-center" scope="col">Last Updated</th>
+                        <th class="text-center" scope="col">Status</th>
+                    </tr>
+                </thead>
                 <tr>
-                <th scope="col">Account Id</th>
-                <th scope="col">Customer Id</th>
-                <th scope="col">Account Type</th>
-                <th scope="col">Balance</th>
-                <th scope="col">Message</th>
-                <th scope="col">Account Created</th>
-                <th scope="col">Last Updated</th>
-                <th scope="col">Status</th>
+                    <th class="text-center" scope="row">{{acc_id}}</th>
+                    <td class="text-center">{{cust_id}}</td>
+                    <td class="text-center">{{acc_type}}</td>
+                    <td class="text-center">{{bal}}</td>
+                    <td class="text-center">{{message}}</td>
+                    <td class="text-center">{{acc_created}}</td>
+                    <td class="text-center">{{last_updated}}</td>
+                    <td class="text-center">{{status}}</td>
                 </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <th scope="row">{{acc_id}}</th>
-                <td>{{cust_id}}</td>
-                <td>{{acc_type}}</td>
-                <td>{{bal}}</td>
-                <td>{{message}}</td>
-                <td>{{acc_created}}</td>
-                <td>{{last_updated}}</td>
-                <td>{{status}}</td>
-            </tr>
-          </tbody>
-        </table>
-        <br/>
-        <a href = "{{ url_for('delete_account') }}" class="btn btn-dark" role="button">Back</a>
-        <br/>
-        <form method="post" name="da" action="{{ url_for('delete_account_details') }}">
-            <div class="form-group">
-                <input type="hidden" name="acc_id" value="{{acc_id}}">
+            </table>
             </div>
-            <div class="form-group">
-                <button type="Submit" class="btn btn-dark">Delete Account</button>
-            </div>
-        </form>
+        <div class="wrapper text-center">
+            <a href = "{{ url_for('delete_account') }}" class="btn btn-dark" role="button" style="float:left;margin-left:30%;">Back</a>
+            <form method="post" name="da" action="{{ url_for('delete_account_details') }}">
+                <div class="form-group">
+                    <input type="hidden" name="acc_id" value="{{acc_id}}">
+                </div>
+
+                <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#exampleModal">
+                  Delete Account
+                </button>
+
+
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Account Deletion Confirmation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body" style="margin:0;">
+                        Are you sure to continue deleting this Account?
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Delete Account</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </form>
+        </div>
+        </div>
 {% endblock %}
 
 </body>

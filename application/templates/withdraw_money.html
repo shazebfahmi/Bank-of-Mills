@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Withdraw Money</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+<body>
+    {% extends "cas_layout.html" %}
+    {% block content%}
+    <div class="container">
+			<h3>Withdraw money</h3>
+			<h6>Customer ID :</h6>{{ data[0] }}
+			<h6>Account ID  :</h6>{{ data[1] }}
+			<h6>Name        :</h6>{{ data[2] }}
+			<h6>Account type:</h6>{{ data[3] }}
+			<h6>Balance     :</h6>{{ data[4] }}
+			<form action="{{ url_for('withdraw_money') }}" method="post">
+				<div class="form-group">
+					<input type="number" class="form-control form-control-lg w-50" name="w_amount" placeholder="Enter amount to withdraw" min = "100" max = "50000" title="Minimum withdraw amount is 100" required>
+				</div>
+				<input type="text" name="cid" value="{{data[0]}}" hidden=True/>
+				<input type="text" name="aid" value="{{data[1]}}" hidden=True/>
+				<input type="text" name="name" value="{{data[2]}}" hidden=True/>
+				<input type="text" name="a_type" value="{{data[3]}}" hidden=True/>
+				<input type="text" name="balance" value="{{data[4]}}" hidden=True/>
+				{% if msg %}
+					<div class="alert alert-danger w-50" role="alert">
+						{{ msg }}
+					</div>
+				{% endif %}
+                <button type="submit" class="btn btn-primary">Withdraw</button>
+            </form>
+		</div>
+
+    {% endblock %}
+
+
+</body>
+</html>

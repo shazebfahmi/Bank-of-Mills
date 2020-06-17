@@ -74,10 +74,14 @@ def c_account():
 		status = int('1')
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s', (cid,acc_type))
+			cursor.execute('SELECT count(*) FROM account WHERE customer_id = %s AND account_type = %s and status = 1', (cid,acc_type))
 			res = cursor.fetchone()
+			cursor.execute('SELECT count(*) FROM customer_status WHERE customer_id = %s AND status = 1', (cid,))
+			res2 = cursor.fetchone()
 			if res['count(*)'] == 1:
 				raise Exception('fail')
+			elif res2['count(*)'] != 1:
+				raise Exception('nocus')
 			else:
 				cursor.execute('INSERT INTO account (customer_id, account_type, balance, message, last_updated, status) VALUES (%s, %s, %s, %s, %s, %s)', (cid, acc_type, amount, details, last_updated, status))
 				cursor.execute('SELECT account_id FROM account WHERE customer_id = %s and account_type = %s', (cid, acc_type))
@@ -86,12 +90,15 @@ def c_account():
 				cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)', (cid, aid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
+				return redirect(url_for('home'))
 		except Exception as e:
 			print('Failed to insert into account' + str(e))
 			if str(e).find('foreign key constraint fails') != -1: 
 				msg = 'Customer ID does not exist'
 			elif str(e) == 'fail':
-				msg = 'You already have ' + acc_type + ' account'
+				msg = 'You already have a ' + acc_type + ' account'
+			elif str(e) == 'nocus':
+				msg = 'Customer does not exist!'
 			else:
 				msg = 'Could not create account...Please try again'
 	if 'loggedin' in session and session['type']=='executive':
@@ -120,7 +127,7 @@ def create_customer():
 			cur.execute(
 				"INSERT INTO customer( customer_ssn, name, age, address, city, state) VALUES (%s, %s, %s, %s, %s, %s)",
 				(InputSSN, InputName, InputAge, InputAddress, InputCity, InputState))
-			timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+			timestamp = datetime.utcnow()
 			cur.execute("SELECT customer_id from customer where customer_ssn=" + InputSSN)
 			res = cur.fetchone()
 			cust_id = res["customer_id"]
@@ -129,10 +136,9 @@ def create_customer():
 			mysql.connection.commit()
 			flash('Customer created successfully', 'success')
 			cur.close()
-
+			return redirect(url_for('login'))
 		except Exception as e:
 			msg = "Please enter a valid Customer SSN ID"
-
 
 	if 'loggedin' in session and session['type'] == 'executive':
 			return render_template('create_customer.html', username=session['username'], emp_type=session['type'],
@@ -155,12 +161,12 @@ def update():
 		cursor.execute('SELECT * FROM customer WHERE customer_id = %s or customer_ssn=%s', (Id,ssn))
 		details = cursor.fetchone()
 		if(details is None):
-			flash("Could not find an account with given details","danger")
+			flash("Could not find an account with given details!","danger")
 			return redirect('/update_search')
 		cursor.execute('SELECT status FROM customer_status WHERE customer_id = %s ', (details['customer_id'],))
 		details2=cursor.fetchone()
 		if(details2['status']!=1):
-			flash("Customer no longer exists exists","danger")
+			flash("Customer no longer exists exists!","danger")
 			return redirect('/update_search')
 	if request.method=='POST' and ('new_name' in request.form or 'new_age' in request.form or 'new_address' in request.form) :
 		n_name=request.form['new_name']
@@ -254,10 +260,11 @@ def delete_customer():
 			timestamp = datetime.utcnow()
 			print("after timestamp")
 			cursor2.execute("UPDATE customer_status set status = 0,message='customer deleted successfully', last_updated = %s  where customer_id = %s",(timestamp,id2))
+			cursor2.execute("update account set status = 0,message='account deleted successfully *',last_updated = %s where customer_id = %s ",(timestamp,id2))
 			print("delete query executed")
 			cursor2.execute("COMMIT")
 			print('delete query committed')
-			flash('Deleted successfully','success')
+			flash('Customer and all related accounts deleted successfully','success')
 			cursor2.close()
 			
 		except:
@@ -285,12 +292,11 @@ def delete_customer():
 			#print(type(details),details)
 			
 		except Exception as e:
-			print("in except of retrieve  ")
+			print("in except of retrieve  :" +str(e))
 			msg = "Could not search for the customer"
 	
 	
 	return render_template('delete_customer.html',checked = checked,details =details,msg=msg)
-
 
 @app.route('/delete_account',methods=['GET','POST'])
 def delete_account():
@@ -314,7 +320,6 @@ def delete_account():
 
 			return render_template('del_acc_details.html', acc_id=acc_id, cust_id=cust_id, acc_type=acc_type, bal=bal,
 											   message=message, acc_created=acc_created, last_updated=last_updated, status=status)
-
 		except Exception as e:
 			msg="Please enter valid Account Id"
 
@@ -336,16 +341,15 @@ def delete_account_details():
 			mysql.connection.commit()
 			flash('Customer account deleted successfully', 'success')
 			cursor.close()
+			return redirect(url_for('home'))
 		except Exception as e:
 			msg="Could not delete, Please try again later!"
 
 	if 'loggedin' in session and session['type'] == 'executive':
 		return render_template('del_acc_details.html', username=session['username'], emp_type=session['type'], msg=msg)
-
 	return redirect(url_for('login'))
 
 
-	
 @app.route('/search_account')
 def search_account():
 	if 'loggedin' in session and session['type'] == 'cashier':
@@ -440,6 +444,121 @@ def deposit_money():
 			data = request.args.getlist('val')
 			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
+
+	
+	
+@app.route('/transfer_money',methods=['GET','POST'])
+def transfer_money():
+	msg=''
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if request.form.get('btn') == 'transfer_btn':
+			amount = request.form.get('amount')
+			
+			bal = request.form.get('balance')
+			
+			print("amount enterred = "+amount+" balance is : "+bal)
+			if (int(bal) - int(amount)) < 1000:
+				msg = 'Amount cannot be transfered, to maintain minimum balance (try smaller amount)'
+				print("masg updated")
+			
+				
+			#return render_template('transfer_money.html',msg=msg)
+			
+			
+		
+		cred = request.args.getlist('val')
+		print(cred,type(cred))
+		cust_id = cred[0]
+		acc_id = cred[1]
+		cus_name = cred[2]
+		acc_type = cred[3]
+		bal = cred[4]
+		
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (cust_id,))
+			accs = cursor.fetchall()
+			if len(accs)!=2:
+				flash("Cannot transfer, since only one type of account exists, for this customer ",'success')
+				return redirect(url_for('home'))
+		except:
+			print("diugfjkf")
+			
+		
+		print(" Customer id = "+str(cust_id)+" Account id "+acc_id+"  account type" + acc_type+ " bal : "+bal)
+		
+			
+		return render_template('transfer_money.html',cust_id=cust_id,acc_id=acc_id,cus_name=cus_name,acc_type=acc_type,bal=bal,msg=msg)
+		
+	else:
+		return redirect(url_for('login'))
+
+
+@app.route('/verify_balance_and_execute',methods=['GET','POST'])
+def verify_balance_and_execute():
+
+	if 'loggedin' in session and session['type'] == 'cashier':
+		bal = request.form.get('balance')
+		amt = request.form.get('amount')
+		id =  request.form.get('cus_id')
+		acc_id =  request.form.get('acc_id')
+		name = request.form.get('name')
+		stype = request.form.get('s_acc')
+		dtype = request.form.get('d_acc')
+		
+		print("cus id in verify :"+id+" bal : "+bal+" amt "+amt+" acc id "+acc_id+" name : "+name+" s type "+stype+" dtype :"+dtype)
+		if int(bal) - int(amt) < 1000:
+			flash("Cannot transfer, try again with lesser amount",'success')
+			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
+		else:
+			ts = datetime.utcnow()
+			try:
+				cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+				cursor.execute('update account set balance = %s , message = "account debited successfully" , last_updated = %s where account_id = %s  and status =1',(str(int(bal)-int(amt)),ts,acc_id))
+				cursor.execute('select balance,account_id from account where customer_id = %s and status=1 and account_type= %s ', (id,dtype))
+				abal = cursor.fetchall()
+				cbal = abal[0]['balance']
+				dacc_id = abal[0]['account_id']
+				print(cbal,type(cbal))
+				print("destiation acc no : ",dacc_id)
+				cursor.execute('update account set balance = %s , message = "account credited successfully" , last_updated = %s where account_type = %s and status =1',(str(cbal+int(amt)),ts,dtype))
+				
+				#for transactions table updation
+				#one = "insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values ('{0}','{1}','withdraw','{2}','{3}',{4})  ".format(id,acc_id,stype,ts,amt)
+				
+				#print(one)
+				
+				
+				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'withdraw',%s,%s,%s)  ",(id,acc_id,stype,ts,amt))
+				
+				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'deposit',%s,%s,%s)  ",(id,dacc_id,dtype,ts,amt))
+				
+				
+				
+				#cursor.execute('update account set balance = %d , message = "amount recieved successfully" , last_updated = %s where account_id != %s and status = 1 ', (int(bal)+diff,ts,acc_id))
+				#accs = cursor.fetchall()
+				'''if len(accs)!=2:
+					flash("Cannot transfer, ",'success')
+					return redirect(url_for('home'))'''
+					
+				#print("cursor val size :",len(accs))
+				mysql.connection.commit()
+				flash('Amount transferred successfully','success')
+				return redirect(url_for('login'))
+			except Exception as e:
+				print('Failed to transfer :  ' + str(e))
+				msg = 'could not deposit money...Please try again'
+		#print(type(bal),type(amt))
+		
+		
+		
+		
+		return redirect(url_for('home'))
+		
+	else:
+		return redirect(url_for('login'))
+
+
 
 @app.route('/account_statement')
 def account_statement():
@@ -560,3 +679,50 @@ def display_statement():
 			return redirect(url_for('login'))
 	else:
 		return redirect(url_for('login'))
+
+
+@app.route('/withdraw_money',methods=['POST'])
+def withdraw_money():
+	msg = ''
+	if request.method == 'POST' and 'w_amount' in request.form:
+		cust_id = request.form['cid']
+		acc_id = request.form['aid']
+		acc_type = request.form['a_type']
+		bal = request.form['balance']
+		amt = request.form['w_amount']
+		ts = datetime.utcnow()
+		try:
+			t_amt = int(bal) - int(amt)
+			if(t_amt<=1000):
+				msg="Please maintain a minimum balance of 1000"
+			else:
+				cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+				cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)',
+					(cust_id, acc_id, 'withdraw', acc_type, amt))
+				cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1',
+					(t_amt, 'amount withdrawn successfully', ts, acc_id))
+				mysql.connection.commit()
+				flash('Amount withdrawn successfully', 'success')
+				return redirect(url_for('login'))
+		except Exception as e:
+			print('Failed to withdraw ' + str(e))
+			msg = 'could not withdraw money...Please try again'
+	if 'loggedin' in session and session['type'] == 'cashier' and (
+			'cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
+		data = []
+		data.append(request.form['cid'])
+		data.append(request.form['aid'])
+		data.append(request.form['name'])
+		data.append(request.form['a_type'])
+		data.append(request.form['balance'])
+		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,
+							   data=data)
+	return redirect(url_for('login'))
+	if 'loggedin' in session and session['type'] == 'cashier':
+		if request.args:
+			data = request.args.getlist('val')
+			return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'],
+								   msg=msg, data=data)
+	return redirect(url_for('login'))
+
+

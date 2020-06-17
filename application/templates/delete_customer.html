@@ -1,25 +1,19 @@
 <!DOCTYPE html>
     <head>
         <meta charset="utf-8">
-		<title>Sign in</title>
-		 <link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<title>Customer Delete</title>
     </head>
-    <body>
+    <body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
         {% extends "cus_layout.html" %}
-
         {% block content%}
 
-		
-        <div class="row">
-            <div class="container">
-                <h2>Delete Customer </h2>
+        <div class="form_div">
+                <h2 class="text-center" style="margin-bottom:5%;">Delete Customer</h2>
 				{% if msg %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            {{ msg }}
-                        </div>
-                    {% endif %}
+                    <div class="alert alert-danger w-50" role="alert" style="margin: auto; margin-bottom:3%;">
+                        {{ msg }}
+                    </div>
+                {% endif %}
                 <form action="{{ url_for('delete_customer') }}" method="post">
                   <div class="form-group">
                     <h6>Customer Id : </h6><input type="text" class="form-control form-control-lg w-50" name="customer_id" placeholder="  Enter Customer ID " value="{% if details['customer_id']  %} {{details['customer_id']}} {% endif %}" required>
@@ -45,11 +39,6 @@
 				  <div class="form-group">
                     <h6>State : </h6><input type="text" class="form-control form-control-lg w-50" name="state" placeholder="   Customer State " value="{% if details['state']  %} {{details['state']}} {% endif %}" readonly="readonly"  >
                   </div>
-                    {% if msg %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            {{ msg }}
-                        </div>
-                    {% endif %}
                   {% if  checked %}<button type="submit" value="d"  name="btn" class="btn btn-primary">Delete Customer Database </button>{% endif %}
 				  </form><br>
 				  <form action="{{ url_for('delete_customer') }}" method="post">
@@ -58,7 +47,6 @@
 					
                 
 
-            </div>
         </div>
         {% endblock %}
 

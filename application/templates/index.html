@@ -2,33 +2,40 @@
     <head>
         <meta charset="utf-8">
 		<title>Sign in</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     </head>
-    <body>
-        {% extends "login_layout.html" %}
-
-        {% block content%}
-        <div class="row">
-            <div class="container">
-                <h2>Login</h2>
-                <form action="{{ url_for('login') }}" method="post">
-                  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="username" placeholder="Enter User ID" required>
-                  </div>
-                  <div class="form-group">
-                    <input type="password" class="form-control form-control-lg w-50" name="password" placeholder="Password" required>
-                  </div>
-                    {% if msg %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            {{ msg }}
+    <body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
+        {% block content %}
+		<nav class="navbar navbar-dark bg-dark">
+            <a href="#" class="navbar-brand">
+			<img src="{{ url_for('static', filename = 'images/icon.png')}}" width="40" height="40" class="d-inline-block align-top" style="margin-right:3%">
+                Digital Bank
+            </a>
+		</nav>
+            <div class="login_div">
+                <img src="{{ url_for('static', filename = 'images/img-01.png')}}" style="float:left;margin:5% 5% 0 3%;">
+                <div class="login_text" style="margin-top:8%;">
+                    <h2 class="text-center" style="margin-bottom:3%;">Employee Login</h2>
+                    <form action="{{ url_for('login') }}" method="post">
+                      <div class="form-group text-center">
+                        <input type="text" class="form-control w-50 login_inp" name="username" placeholder="User ID" required>
+                      </div>
+                      <div class="form-group text-center">
+                        <input type="password" class="form-control w-50 login_inp" name="password" placeholder="Password" required>
+                      </div>
+                        {% if msg %}
+                            <div class="alert alert-danger text-center wrapper" role="alert" style="float:right;margin-right:12%;">
+                                {{ msg }}
+                            </div>
+                        {% endif %}
+                        <div class="wrapper" style="">
+                            <button type="submit" class="btn btn-dark text-center login_inp">Login</button>
                         </div>
-                    {% endif %}
-                  <button type="submit" class="btn btn-primary">Login</button>
-                </form>
-
+                    </form>
+                </div>
             </div>
-        </div>
         {% endblock %}
 
     </body>
