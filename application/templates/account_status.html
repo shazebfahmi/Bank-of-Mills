@@ -1,36 +1,47 @@
-{% extends "cus_layout.html" %}
-
-{% block content %}
-
-<h1 style="text-align: center; color: brown;" ><b>Account Status</b></h1></br></br>
-
-
-    <table style="width=100%">
-        <tr>
-            <th style="background-color:orange ;">Customer ID</th>
-            <th style="background-color:orange ;">Account ID</th>
-            <th style="background-color:orange ;">Account Type</th>
-            <th style="background-color:orange ;">Account Status</th>
-            <th style="background-color:orange ;">Message</th>
-            <th style="background-color:orange ;">Last Updated</th>
-            <th style="background-color:orange ;">Operations</th>
-
-        {% for i in details %}
-        <tr> 
-            <td>{{ i['customer_id'] }}</td>
-            <td>{{ i['account_id'] }}</td>
-            <td>{{ i['account_type'] }}</td>
-            <td>{{ 'Active' if i['status']==1 else 'Pending'}}</td>
-            <td>{{ i['message'] }}</td>
-            <td>{{ i['last_updated'] }}</td>
-            <td>
-              <form action="{{url_for('account_status')}}" method="POST" >
-                <input type="hidden" name="refresh" value="{{i.account_id}}">
-                <button style=" border-radius: 50%;background-color:brown; color:white ;">Refresh</button> 
-              </form>
-           </td>
-        </tr>
-       {% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Account</title>
+</head>
+<body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
+    {% extends "cus_layout.html" %}
+    {% block content%}
+    <div class="table_div">
+        <h2 class="text-center" style="margin:1% 0 3% 0;">Customer status</h2>
+        <div class="table-responsive" style="margin-top:30px;">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th class="text-center">Customer ID</th>
+                        <th class="text-center">Account ID</th>
+                        <th class="text-center">Account Type</th>
+                        <th class="text-center">Account Status</th>
+                        <th class="text-center">Message</th>
+                        <th class="text-center">Last Updated</th>
+                        <th class="text-center">Refresh</th>
+                    </tr>
+                </thead>
+                {% for i in details %}
+                <tr>
+                    <td class="text-center">{{ i['customer_id'] }}</td>
+                    <td class="text-center">{{ i['account_id'] }}</td>
+                    <td class="text-center">{{ i['account_type'] }}</td>
+                    <td class="text-center">{{ 'Active' if i['status']==1 else 'Pending'}}</td>
+                    <td class="text-center">{{ i['message'] }}</td>
+                    <td class="text-center">{{ i['last_updated'] }}</td>
+                    <td class="text-center">
+                        <form action="{{url_for('account_status')}}" method="POST" >
+                            <input type="hidden" name="refresh" value="{{i.account_id}}">
+                            <input type="image" value="submit" src="{{ url_for('static', filename='images/refresh.png') }}"/>
+                        </form>
+                    </td>
+                </tr>
+           {% endfor %}
        </table>
+        </div>
+    </div>
     
 {% endblock %}
+</body>
+</html>

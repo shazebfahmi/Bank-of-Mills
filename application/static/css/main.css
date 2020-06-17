@@ -42,11 +42,19 @@ table,th,td{
 .form_div {
     background-color:#FFF;
     width:60%;
-    height:650px;
     margin: auto;
     padding: 10px;
     margin-top:3%;
     border-radius:10px;
+}
+
+.table_div {
+    background-color:#FFF;
+    width:95%;
+    margin: auto;
+    padding: 30px;
+    margin-top:3%;
+    border-radius:15px;
 }
 
 .wrapper {

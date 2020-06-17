@@ -1,39 +1,48 @@
 <!DOCTYPE html>
 <head>
-        <meta charset="utf-8">
-		<title>Home</title>
-<!--		<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">-->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-</head>
-<body>
-	<style>
+    <meta charset="utf-8">
+    <title>Account Create</title>
+    <style>
 		select:invalid { color: gray; }
 	</style>
+</head>
+<body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
 	{% extends "cus_layout.html" %}
 	{% block content%}
-		<div class="container">
-			<h3>Create a new account</h3>
+		<div class="form_div">
+			<h2 class="text-center" style="margin-bottom:5%;">Account Creation</h2>
 			<form action="{{ url_for('c_account') }}" method="post">
-                  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="customer_id" placeholder="Customer ID (9-digits)" pattern="\d{9}" required>
+                {% if msg %}
+                    <div class="alert alert-danger w-50" role="alert" style="margin: auto; margin-bottom:3%;">
+                        {{ msg }}
+                    </div>
+                {% endif %}
+                  <div class="form-group row">
+                    <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer ID : </label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="customer_id" placeholder="Customer ID (9-digits)" pattern="\d{9}" required>
+                    </div>
                   </div>
-                  <div class="form-group">
-					<select name="account_type" class="form-control form-control-lg w-50" required>
-						<option value="" disabled selected hidden>Select account type</option>
-						<option value="current">Current</option>
-						<option value="savings">Savings</option>
-					</select>
+                  <div class="form-group row">
+                    <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Account Type : </label>
+                    <div class="col-sm-5">
+                        <select name="account_type" class="form-control" required>
+                            <option value="" disabled selected hidden>Select account type</option>
+                            <option value="current">Current</option>
+                            <option value="savings">Savings</option>
+                        </select>
+                    </div>
                   </div>
-				  <div class="form-group">
-                    <input type="number" class="form-control form-control-lg w-50" name="amount" placeholder="Deposit amount" min="1000" required>
+				  <div class="form-group row">
+                    <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Initial Deposit Amount : </label>
+                    <div class="col-sm-5">
+                        <input type="number" class="form-control" name="amount" placeholder="Deposit amount" min="1000" required>
+                    </div>
                   </div>
-                    {% if msg %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            {{ msg }}
-                        </div>
-                    {% endif %}
-                  <button type="submit" class="btn btn-primary">Create</button>
+                  <div class="form-group text-center">
+                      <label for="Submit"></label>
+                      <button type="submit" class="btn btn-dark">Create</button>
+                  </div>
             </form>
 		</div>
 	{% endblock %}

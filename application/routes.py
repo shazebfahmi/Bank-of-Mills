@@ -84,14 +84,15 @@ def c_account():
 				cursor.execute('INSERT INTO transactions (customer_id, account_id, description, acc_type, amount) VALUES (%s, %s, %s, %s, %s)', (cid, aid, 'deposit', acc_type, amount))
 				mysql.connection.commit()
 				flash('Account created successfully','success')
+				return redirect(url_for('home'))
 		except Exception as e:
 			print('Failed to insert into account' + str(e))
 			if str(e).find('foreign key constraint fails') != -1: 
 				msg = 'Customer ID does not exist'
 			elif str(e) == 'fail':
-				msg = 'You already have ' + acc_type + ' account'
+				msg = 'You already have a ' + acc_type + ' account'
 			elif str(e) == 'nocus':
-				msg = 'Customer doesnot exist'
+				msg = 'Customer does not exist!'
 			else:
 				msg = 'Could not create account...Please try again'
 	if 'loggedin' in session and session['type']=='executive':
@@ -291,7 +292,6 @@ def delete_customer():
 	
 	return render_template('delete_customer.html',checked = checked,details =details,msg=msg)
 
-
 @app.route('/delete_account',methods=['GET','POST'])
 def delete_account():
 	msg=""
@@ -314,7 +314,6 @@ def delete_account():
 
 			return render_template('del_acc_details.html', acc_id=acc_id, cust_id=cust_id, acc_type=acc_type, bal=bal,
 											   message=message, acc_created=acc_created, last_updated=last_updated, status=status)
-
 		except Exception as e:
 			msg="Please enter valid Account Id"
 
@@ -336,16 +335,15 @@ def delete_account_details():
 			mysql.connection.commit()
 			flash('Customer account deleted successfully', 'success')
 			cursor.close()
+			return redirect(url_for('home'))
 		except Exception as e:
 			msg="Could not delete, Please try again later!"
 
 	if 'loggedin' in session and session['type'] == 'executive':
 		return render_template('del_acc_details.html', username=session['username'], emp_type=session['type'], msg=msg)
-
 	return redirect(url_for('login'))
 
 
-	
 @app.route('/search_account')
 def search_account():
 	if 'loggedin' in session and session['type'] == 'cashier':
