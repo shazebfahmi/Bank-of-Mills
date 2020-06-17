@@ -618,7 +618,6 @@ def display_statement():
 			end_date_raw= request.form['end_date']
 			account_id=request.form['accnt_id']
 			transactions=(pdf_xl_query(start_date_raw,end_date_raw,account_id))
-
 			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
 			trans=[]
 			for i in transactions:
@@ -641,7 +640,7 @@ def display_statement():
 			response=make_response(pdf.output(dest='S').encode('latin-1'))
 			response.headers['Content-Disposition']='inline , filename=output.pdf'
 			response.headers['Content-Type']='application/pdf'
-			return respons
+			return response
 		
 		#rendering Excel file for transactions between start date and end date	
 		if(request.method=='POST' and 'start_datex' in request.form and 'end_datex' in request.form and 'accnt_idx' in request.form):
