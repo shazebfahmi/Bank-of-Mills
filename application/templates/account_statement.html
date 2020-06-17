@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Account Statement</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script>
         function max_date() {
             document.getElementById('end_date').max = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0];
@@ -37,18 +35,21 @@
         }
     </style>
 </head>
-<body>
+<body style="background-image: linear-gradient(to right, #3d7eaa, #ffe47a);">
     {% extends "cas_layout.html" %}
     {% block content %}
-        <div class="container">
-            <h2>Account Statement</h2>
+        <div class="form_div">
+            <h2 class="text-center" style="margin:1% 0 3% 0;">Account Statement</h2>
             <form action="{{ url_for('display_statement') }}" method="post">
-                <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="account_id" pattern="\d{9}" title="Account ID must be of 9 digits" placeholder="Account ID" required>
-                </div>
 
+                <div class="form-group row">
+					<label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Account ID : </label>
+					<div class="col-sm-5">
+						<input type="text" class="form-control" name="account_id" pattern="\d{9}" title="Account ID must be of 9 digits" placeholder="Account ID" required>
+					</div>
+            	</div>
 
-                <div class="form-check form-check-inline">
+                <div class="form-check form-check-inline" style="margin-left:25%;">
                   <input class="form-check-input" type="radio" name="radio_options" id="check1" value="last" onclick="mycheck1();" required>
                   <label class="form-check-label" for="inlineRadio1">Last n Transactions</label>
                 </div>
@@ -58,7 +59,7 @@
                 </div>
 
                 <div class="form-group" id="disp1" style="margin-top:10px;">
-                    <select class="form-control form-control-lg w-25" name="num_transactions">
+                    <select class="form-control" name="num_transactions">
                         <option value="" disabled selected>Number of Transactions</option>
                         {% for i in range(1,11) %}
                         <option value="{{ i }}">
@@ -71,15 +72,17 @@
                 <div class="form-group" id="disp2" style="margin-top:10px;">
                     <div class="form-group">
                      <label>Start Date</label>
-                     <input type="date" name="start_date" min="2000-01-01" id="start_date" class="form-control w-50" onclick="max_date();">
+                     <input type="date" name="start_date" min="2000-01-01" id="start_date" class="form-control" onclick="max_date();">
                     </div>
                     <div class="form-group">
                      <label>End Date</label>
-                     <input type="date" name="end_date" min="2000-01-01" id="end_date" class="form-control w-50" onclick="max_date();">
+                     <input type="date" name="end_date" min="2000-01-01" id="end_date" class="form-control" onclick="max_date();">
                     </div>
                 </div>
-                </br>
-                <button type="submit" class="btn btn-dark" style="margin-top:10px;">Submit</button>
+                <div class="form-group text-center" style="margin-top:5%;">
+                      <label for="Submit"></label>
+                      <button type="submit" class="btn btn-dark">Submit</button>
+				</div>
             </form>
         </div>
     {% endblock %}

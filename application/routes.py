@@ -456,8 +456,7 @@ def transfer_money():
 		data.append(request.form['name'])
 		data.append(request.form['a_type'])
 		data.append(request.form['balance'])
-		
-		
+
 		if request.form.get('btn') == 'transfer_btn':
 			amount = request.form.get('amount')
 			
@@ -465,21 +464,19 @@ def transfer_money():
 			
 			print("amount enterred = "+amount+" balance is : "+bal)
 			if (int(bal) - int(amount)) < 1000:
-				msg = 'Amount cannot be transfered, to maintain minimum balance (try smaller amount)'
-								
-					
+				msg = 'Amount cannot be transfered, please maintain minimum balance! (Try smaller amount)'
+
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (data[0],))
 			accs = cursor.fetchall()
 			if len(accs)!=2:
-				flash("Cannot transfer, since only one type of account exists, for this customer ",'success')
-				return redirect(url_for('home'))
+				flash("Cannot transfer, since only one type of account exists, for this customer ",'danger')
+				return redirect(url_for('display_search_account',account_id=request.form['aid']))
 		except:
 			print("diugfjkf")
-			
-		
-		
+
+
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s and account_type !=  %s ', (data[0],data[3]))
@@ -513,11 +510,11 @@ def verify_balance_and_execute():
 		
 		
 		if int(amt) < 1:
-			flash("Cannot transfer, try amount more than 0.",'success')
-			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
+			flash("Cannot transfer, try amount more than 0.",'danger')
+			return redirect(url_for('display_search_account',account_id=acc_id))
 		if int(bal) - int(amt) < 1000:
-			flash("Cannot transfer, try again with lesser amount",'success')
-			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
+			flash("Amount cannot be transfered, please maintain minimum balance! (Try smaller amount)",'danger')
+			return redirect(url_for('display_search_account',account_id=acc_id))
 		else:
 			ts = datetime.utcnow()
 			try:
@@ -536,12 +533,11 @@ def verify_balance_and_execute():
 				
 				mysql.connection.commit()
 				flash('Amount transferred successfully','success')
-				return redirect(url_for('login'))
+				return redirect(url_for('display_search_account',account_id=acc_id))
 			except Exception as e:
 				msg = 'could not deposit money...Please try again'
 		
 		return redirect(url_for('home'))
-		
 	else:
 		return redirect(url_for('login'))
 

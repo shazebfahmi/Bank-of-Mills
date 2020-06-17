@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Account Statement</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-          <link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
 </head>
-<body>
+<body style="background-image: linear-gradient(to right, #3d7eaa, #ffe47a);">
     {% extends "cas_layout.html" %}
     {% block content %}
-        <div class="container">
-            <h1>Account Statement</h1>
+        <div class="table_div">
+            <h2 class="text-center" style="margin:1% 0 3% 0;">Account Statement</h2>
             {% if transactions %}
-                <h2 class="text-center">Account ID - {{ transactions[0]['account_id'] }}</h2>
-                <h2 class="text-center">Account Type - {{ transactions[0]['acc_type'] }}</h2>
+                <h3 class="text-center">Account ID - {{ transactions[0]['account_id'] }}</h3>
+                <h3 class="text-center">Account Type - {{ transactions[0]['acc_type'] }}</h3>
                 <div class="table-responsive" style="margin-top:30px;">
                     <table class="table">
                         <thead class="thead-dark">
@@ -43,26 +40,26 @@
                     <input type="hidden"  type="date"  name="start_date" value="{{ start_date }}">
                     <input type="hidden"  type="date" name="end_date" value="{{ end_date }}">
                     <input type="hidden"  name="accnt_id" value="{{ account_id }}">
-                    <button class="btn-dark">Download as PDF</button>
+                    <button class="btn btn-dark">Download as PDF</button>
                 </form>
                 <form style="display:inline-block ;margin-bottom: 30px;" action="{{url_for('display_statement')}}" method="POST">
-                    <input type="hidden"  type="date"  name="start_datex" value="{{ start_date }}">
-                    <input type="hidden"  type="date" name="end_datex" value="{{ end_date }}">
+                    <input type="hidden" name="start_datex" value="{{ start_date }}">
+                    <input type="hidden" name="end_datex" value="{{ end_date }}">
                     <input type="hidden"  name="accnt_idx" value="{{ account_id }}">
-                    <button  class="btn-dark">Download as Excel</button>
+                    <button class="btn btn-dark">Download as Excel</button>
                 </form>
             </div>
             {% else %} <!--Download buttons for N number of transactions-->
             <div style="text-align:center;margin-top:10px;">
                 <form style="display:inline-block ; margin-bottom: 30px;" action="{{url_for('display_statement')}}" method="POST">
-                    <input type="hidden"  type="text" name="count" value="{{ count }}">
-                    <input type="hidden"  name="a_id" value="{{ account_id }}">
-                    <button  class="btn-dark">Download as PDF</button>
+                    <input type="hidden" name="count" value="{{ count }}">
+                    <input type="hidden" name="a_id" value="{{ account_id }}">
+                    <button  class="btn btn-dark">Download as PDF</button>
                 </form>
                 <form style="display:inline-block ; margin-bottom: 30px;" action="{{url_for('display_statement')}}" method="POST">
-                    <input type="hidden"  type="ctext" name="countx" value="{{ count }}">
+                    <input type="hidden" name="countx" value="{{ count }}">
                     <input type="hidden"  name="a_idx" value="{{ account_id }}">
-                    <button  class="btn-dark">Download as Excel</button>
+                    <button  class="btn btn-dark">Download as Excel</button>
                 </form>
             </div>
             {% endif %}
