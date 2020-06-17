@@ -180,12 +180,12 @@ def update():
 		n_addr=request.form['new_address']
 		n_age=request.form['new_age']
 		Id=request.form['ID']
-		timestamp = timestamp = datetime.utcnow()
+		timestamp = datetime.utcnow()
 		print(timestamp)
 		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 		cursor.execute("UPDATE customer SET name = %s,address=%s,age=%s WHERE customer_id=%s",(n_name,n_addr,n_age,Id,))
-		cursor.execute("UPDATE customer_status SET message=%s WHERE customer_id=%s",("customer update complete",Id,))
-		cursor.execute("UPDATE customer_status SET message=%s WHERE last_updated=%s",(timestamp,Id,))
+		cursor.execute("UPDATE customer_status SET message=%s, last_updated=%s WHERE customer_id=%s",("customer update complete",timestamp,Id,))
+		#cursor.execute("UPDATE customer_status SET message=%s WHERE last_updated=%s",(timestamp,Id,))
 		cursor.execute("COMMIT")
 		flash("Successfully Updated","success")
 		return redirect(url_for('login'))
