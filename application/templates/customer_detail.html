@@ -1,16 +1,37 @@
-{% extends 'cus_layout.html' %}
-
-{% block content %}
-
-    <h3 style=" float:left ;text-align: center; color:purple;"><b>CUSTOMER DETAIL</b></h3></br></br>
-        <div style="text-align: left; align-content: left;">
-        <label><b>Customer ID :</b></label>  <label> {{ customer_detail2['customer_id']}}</label></br>
-        <label><b>Customer Name :</b></label>  <label> {{ customer_detail1['name']}}</label></br>
-        <label><b>SSN ID : </b></label><label>  {{ customer_detail1['customer_ssn']}}</label></br>
-        <label><b>Status :</b> </label> <label>  {{"Active" if customer_detail2['status']==1 else "pending"}}</label></br>
-        <label><b>Message :</b> </label> <label>  {{ customer_detail2['message'] }}</label></br>
-        <label><b>Last Updated :</b></label><label>  {{ customer_detail2['last_updated'] }}<label></br>
-       
-
-
-{%endblock%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Details</title>
+</head>
+<body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
+    {% extends "cus_layout.html" %}
+        {% block content%}
+            <div class="table_div">
+                <h2 class="text-center" style="margin:1% 0 3% 0;">Customer Details</h2>
+                <div class="table-responsive" style="margin-top:30px;">
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center">Customer ID</th>
+                                <th class="text-center">Customer SSN</th>
+                                <th class="text-center">Customer Name</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Message</th>
+                                <th class="text-center">Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td class="text-center">{{ customer_detail2['customer_id'] }}</td>
+                            <td class="text-center">{{ customer_detail1['customer_ssn'] }}</td>
+                            <td class="text-center">{{ customer_detail1['name'] }}</td>
+                            <td class="text-center">{{ "Active" if customer_detail2['status']==1 else "pending" }}</td>
+                            <td class="text-center">{{ customer_detail2['message'] }}</td>
+                            <td class="text-center">{{ customer_detail2['last_updated'] }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        {% endblock %}
+</body>
+</html>

@@ -4,12 +4,11 @@ from flask_mysqldb import MySQL
 import MySQLdb
 import MySQLdb.cursors
 import time
+from fpdf import FPDF
 import flask_excel as excel
-#from flask_weasyprint import HTML,render_pdf
 from io import StringIO
 from datetime import datetime
 import re
-
 
 mysql = MySQL(app)
 excel.init_excel(app)
@@ -58,10 +57,11 @@ def customer_status():
 	if (request.method == 'POST'):
 		return redirect(url_for('customer_status'))
 	cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-	cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id')
+	cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id AND S.status=1;')
 	values = cursor.fetchall()
 	return render_template('customer_status.html',values=values)
 
+#create account
 @app.route('/create_account', methods=['GET', 'POST'])
 def c_account():
 	msg = ''
@@ -91,7 +91,7 @@ def c_account():
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 				return redirect(url_for('home'))
-		except Exception as e:
+		except Exception as e:#different error for foreign key constraint violation and other unhandled exceptions 
 			print('Failed to insert into account' + str(e))
 			if str(e).find('foreign key constraint fails') != -1: 
 				msg = 'Customer ID does not exist'
@@ -353,17 +353,20 @@ def delete_account_details():
 @app.route('/search_account')
 def search_account():
 	if 'loggedin' in session and session['type'] == 'cashier':
-		if('error_empty' in request.args):
-			return render_template('search_account.html',username=session['username'],emp_type=session['type'],error_empty=True)
-		else:
-			return render_template('search_account.html', username=session['username'], emp_type=session['type'])
+		return render_template('search_account.html', username=session['username'], emp_type=session['type'])
 	else:
 		return redirect(url_for('login'))
 
 
 @app.route('/display_search_account',methods=['GET','POST'])
 def display_search_account():
-	if request.method == 'GET':
+	if request.method == 'GET' and 'account_id' in request.args:
+		account_id = request.args['account_id']
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id=C.customer_id AND account_id = %s AND status=1',(account_id,))
+		values_account = cursor.fetchone()
+		if (values_account):
+			return render_template('display_search_account.html', values_account=values_account)
 		return redirect(url_for('search_account'))
 	if 'loggedin' in session and session['type'] == 'cashier':
 		if (request.method=='POST' and 'account_select' in request.form):
@@ -381,34 +384,38 @@ def display_search_account():
 			account_id = request.form['account_id']
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			if(account_id == '' and customer_id == '' and customer_ssn == ''):
-				error_empty = True
-				return redirect(url_for('search_account',error_empty = error_empty))
+				flash('Please enter either of the search terms!','danger')
+				return redirect(url_for('search_account'))
 			if(account_id == '' and customer_id == ''):
 				cursor.execute('SELECT C.customer_id,C.name FROM customer C,customer_status S WHERE C.customer_ssn = %s AND C.customer_id=S.customer_id AND S.status=1;', (customer_ssn,))
 				values = cursor.fetchone()
 				if(values):
 					customer_id = values['customer_id']
 				else:
-					return render_template('display_search_account.html',error_empty=True)
+					flash('No results found for the search criteria','danger')
+					return redirect(url_for('search_account'))
 			if(account_id == ''):
 				cursor.execute('SELECT * FROM account A,customer C,customer_status S WHERE A.customer_id = C.customer_id AND C.customer_id = S.customer_id AND A.customer_id = %s AND S.status=1 AND A.status=1', (customer_id,))
 				values_customer = cursor.fetchall()
 				if(values_customer):
 					return render_template('display_search_account.html',values_customer = values_customer)
 				else:
-					return render_template('display_search_account.html', error_empty=True)
+					flash('No results found for the search criteria', 'danger')
+					return redirect(url_for('search_account'))
 			else:
 				cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id=C.customer_id AND account_id = %s AND status=1', (account_id,))
 				values_account = cursor.fetchone()
 				if(values_account):
 					return render_template('display_search_account.html',values_account = values_account)
 				else:
-					return render_template('display_search_account.html', error_empty=True)
+					flash('No results found for the search criteria', 'danger')
+					return redirect(url_for('search_account'))
 		else:
 			return redirect(url_for('search_account'))
 	else:
 		redirect(url_for('login'))
 
+#Deposit money
 @app.route('/deposit_money',methods=['GET','POST'])
 def deposit_money():
 	msg = ''
@@ -426,10 +433,10 @@ def deposit_money():
 			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
 			mysql.connection.commit()
 			flash('Amount deposited successfully','success')
-			return redirect(url_for('login'))
+			return redirect(url_for('display_search_account',account_id=acc_id))
 		except Exception as e:
-			print('Failed to deposit ' + str(e))
 			msg = 'could not deposit money...Please try again'
+	#get the values from display_search_account and send it to deposit_money
 	if 'loggedin' in session and session['type']=='cashier' and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
 		data = []
 		data.append(request.form['cid'])
@@ -439,18 +446,19 @@ def deposit_money():
 		data.append(request.form['balance'])
 		return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
-	if 'loggedin' in session and session['type']=='cashier':
-		if request.args:
-			data = request.args.getlist('val')
-			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
-	return redirect(url_for('login'))
 
-	
-	
 @app.route('/transfer_money',methods=['GET','POST'])
 def transfer_money():
 	msg=''
-	if 'loggedin' in session and session['type'] == 'cashier':
+	if 'loggedin' in session and session['type'] == 'cashier'  and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
+		data = []
+		data.append(request.form['cid'])
+		data.append(request.form['aid'])
+		data.append(request.form['name'])
+		data.append(request.form['a_type'])
+		data.append(request.form['balance'])
+		
+		
 		if request.form.get('btn') == 'transfer_btn':
 			amount = request.form.get('amount')
 			
@@ -459,24 +467,11 @@ def transfer_money():
 			print("amount enterred = "+amount+" balance is : "+bal)
 			if (int(bal) - int(amount)) < 1000:
 				msg = 'Amount cannot be transfered, to maintain minimum balance (try smaller amount)'
-				print("masg updated")
-			
-				
-			#return render_template('transfer_money.html',msg=msg)
-			
-			
-		
-		cred = request.args.getlist('val')
-		print(cred,type(cred))
-		cust_id = cred[0]
-		acc_id = cred[1]
-		cus_name = cred[2]
-		acc_type = cred[3]
-		bal = cred[4]
-		
+								
+					
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (cust_id,))
+			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (data[0],))
 			accs = cursor.fetchall()
 			if len(accs)!=2:
 				flash("Cannot transfer, since only one type of account exists, for this customer ",'success')
@@ -485,10 +480,21 @@ def transfer_money():
 			print("diugfjkf")
 			
 		
-		print(" Customer id = "+str(cust_id)+" Account id "+acc_id+"  account type" + acc_type+ " bal : "+bal)
 		
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s and account_type !=  %s ', (data[0],data[3]))
+			d_acc_id = cursor.fetchall()
 			
-		return render_template('transfer_money.html',cust_id=cust_id,acc_id=acc_id,cus_name=cus_name,acc_type=acc_type,bal=bal,msg=msg)
+			d_acc_id = d_acc_id[0]['account_id']
+			data.append(d_acc_id)
+			data.append(msg)
+			
+			print(d_acc_id)
+		except Exception as e: 
+			print(" error was : " +str(e))
+			
+		return render_template('transfer_money.html',data = data)
 		
 	else:
 		return redirect(url_for('login'))
@@ -506,7 +512,10 @@ def verify_balance_and_execute():
 		stype = request.form.get('s_acc')
 		dtype = request.form.get('d_acc')
 		
-		print("cus id in verify :"+id+" bal : "+bal+" amt "+amt+" acc id "+acc_id+" name : "+name+" s type "+stype+" dtype :"+dtype)
+		
+		if int(amt) < 1:
+			flash("Cannot transfer, try amount more than 0.",'success')
+			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
 		if int(bal) - int(amt) < 1000:
 			flash("Cannot transfer, try again with lesser amount",'success')
 			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
@@ -519,39 +528,18 @@ def verify_balance_and_execute():
 				abal = cursor.fetchall()
 				cbal = abal[0]['balance']
 				dacc_id = abal[0]['account_id']
-				print(cbal,type(cbal))
-				print("destiation acc no : ",dacc_id)
+				
 				cursor.execute('update account set balance = %s , message = "account credited successfully" , last_updated = %s where account_type = %s and status =1',(str(cbal+int(amt)),ts,dtype))
-				
-				#for transactions table updation
-				#one = "insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values ('{0}','{1}','withdraw','{2}','{3}',{4})  ".format(id,acc_id,stype,ts,amt)
-				
-				#print(one)
-				
 				
 				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'withdraw',%s,%s,%s)  ",(id,acc_id,stype,ts,amt))
 				
 				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'deposit',%s,%s,%s)  ",(id,dacc_id,dtype,ts,amt))
 				
-				
-				
-				#cursor.execute('update account set balance = %d , message = "amount recieved successfully" , last_updated = %s where account_id != %s and status = 1 ', (int(bal)+diff,ts,acc_id))
-				#accs = cursor.fetchall()
-				'''if len(accs)!=2:
-					flash("Cannot transfer, ",'success')
-					return redirect(url_for('home'))'''
-					
-				#print("cursor val size :",len(accs))
 				mysql.connection.commit()
 				flash('Amount transferred successfully','success')
 				return redirect(url_for('login'))
 			except Exception as e:
-				print('Failed to transfer :  ' + str(e))
 				msg = 'could not deposit money...Please try again'
-		#print(type(bal),type(amt))
-		
-		
-		
 		
 		return redirect(url_for('home'))
 		
@@ -599,7 +587,7 @@ def display_statement():
 					flash("Please enter the start and end dates.", 'danger')
 					return redirect(url_for('account_statement'))
 				start_date=start_date_raw+' 00:00:01'
-				end_date =start_date_raw+' 23:59:59'
+				end_date =end_date_raw+' 23:59:59'
 				start_check = datetime.strptime(start_date,'%Y-%m-%d %H:%M:%S')
 				end_check = datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')
 				if(start_check > end_check):
@@ -626,13 +614,41 @@ def display_statement():
 			return transactions
 
 		#rendering PDF file for transactions between Start date and End date
-		'''if(request.method=='POST' and 'start_date' in request.form and 'end_date' in request.form and 'accnt_id' in request.form):
+		if(request.method=='POST' and 'start_date' in request.form and 'end_date' in request.form and 'accnt_id' in request.form):
 			start_date_raw= request.form['start_date']
 			end_date_raw= request.form['end_date']
 			account_id=request.form['accnt_id']
 			transactions=(pdf_xl_query(start_date_raw,end_date_raw,account_id))
+<<<<<<< HEAD
+<<<<<<< HEAD
+			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			trans=[]
+			for i in transactions:
+				trans.append(str(i['transaction_id']))
+				trans.extend((str(i['description']),str(i['time']),str(i['amount'])))
+				transactions_list.append(trans)
+				trans=[]
+			pdf=FPDF()
+			pdf.add_page()
+			pdf.set_font('Times','BU',20)
+			pdf.cell(180,10,"ACCOUNT STATUS",0,1,'C')
+			pdf.set_font('Times','BU',15)
+			pdf.cell(180,10,"Account ID:"+str(account_id),0,1,'C')
+			pdf.set_font('Arial','B',10)
+			pdf.cell(80,15,"",0,1)
+			for i in transactions_list:
+				for j in i:
+					pdf.cell(45,10,j,1,0,'C')
+				pdf.cell(80,10,"",0,1)
+			response=make_response(pdf.output(dest='S').encode('latin-1'))
+			response.headers['Content-Disposition']='inline , filename=output.pdf'
+			response.headers['Content-Type']='application/pdf'
+			return response
+
+=======
 			html=render_template('pdf_layout.html',transactions=transactions)
-			return render_pdf(HTML(string==html))'''
+			return render_pdf(HTML(string==html))
+>>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
 		
 		#rendering Excel file for transactions between start date and end date	
 		if(request.method=='POST' and 'start_datex' in request.form and 'end_datex' in request.form and 'accnt_idx' in request.form):
@@ -640,24 +656,59 @@ def display_statement():
 			end_date_raw= request.form['end_datex']
 			account_id=request.form['accnt_idx']
 			transactions=pdf_xl_query(start_date_raw,end_date_raw,account_id)
-			transactions_list=[["CUSTOMER ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+<<<<<<< HEAD
+=======
+			print(transactions)
+>>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
 			trans=[]
 			for i in transactions:
 				trans.append(i['transaction_id'])
-				trans.extend((i['customer_id'],i['description'],i['time'],i['amount']))
+				trans.extend((i['description'],i['time'],i['amount']))
 				transactions_list.append(trans)
 				trans=[]
 			return  excel.make_response_from_array(transactions_list,"xlsx",file_name="Account_Status.xlsx")
+<<<<<<< HEAD
+
+=======
 	
-		'''#rendering PDF file for 'N' number of transactions
+>>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
+		#rendering PDF file for 'N' number of transactions
 		if(request.method=='POST' and 'count' in request.form and 'a_id' in request.form ):
 			account_id = request.form['a_id']
 			count = request.form['count']
 			val = 'SELECT * FROM transactions WHERE account_id = %s ORDER BY time DESC LIMIT %s ' % (account_id,count)
 			cursor.execute(val)
 			transactions = cursor.fetchall()
+<<<<<<< HEAD
+
+			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			trans=[]
+			for i in transactions:
+				trans.append(str(i['transaction_id']))
+				trans.extend((str(i['description']),str(i['time']),str(i['amount'])))
+				transactions_list.append(trans)
+				trans=[]
+			pdf=FPDF()
+			pdf.add_page()
+			pdf.set_font('Times','BU',20)
+			pdf.cell(180,10,"ACCOUNT STATUS",0,1,'C')
+			pdf.set_font('Times','BU',15)
+			pdf.cell(180,10,"Account ID:"+str(account_id),0,1,'C')
+			pdf.set_font('Arial','B',10)
+			pdf.cell(80,15,"",0,1)
+			for i in transactions_list:
+				for j in i:
+					pdf.cell(45,10,j,1,0,'C')
+				pdf.cell(80,10,"",0,1)
+			response=make_response(pdf.output(dest='S').encode('latin-1'))
+			response.headers['Content-Disposition']='inline , filename=output.pdf'
+			response.headers['Content-Type']='application/pdf'
+			return response
+=======
 			html=render_template('pdf_layout.html',transactions=transactions)
-			return render_pdf(HTML(string==html))'''
+			return render_pdf(HTML(string==html))
+>>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
 		
 		#rendering Excel file for 'N' number of transactions	
 		if(request.method=='POST' and 'countx' in request.form and 'a_idx' in request.form):
@@ -703,9 +754,8 @@ def withdraw_money():
 					(t_amt, 'amount withdrawn successfully', ts, acc_id))
 				mysql.connection.commit()
 				flash('Amount withdrawn successfully', 'success')
-				return redirect(url_for('login'))
+				return redirect(url_for('display_search_account',account_id=acc_id))
 		except Exception as e:
-			print('Failed to withdraw ' + str(e))
 			msg = 'could not withdraw money...Please try again'
 	if 'loggedin' in session and session['type'] == 'cashier' and (
 			'cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
@@ -715,14 +765,7 @@ def withdraw_money():
 		data.append(request.form['name'])
 		data.append(request.form['a_type'])
 		data.append(request.form['balance'])
-		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,
-							   data=data)
-	return redirect(url_for('login'))
-	if 'loggedin' in session and session['type'] == 'cashier':
-		if request.args:
-			data = request.args.getlist('val')
-			return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'],
-								   msg=msg, data=data)
+		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,data=data)
 	return redirect(url_for('login'))
 
 
