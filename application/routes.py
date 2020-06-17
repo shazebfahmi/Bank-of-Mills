@@ -12,7 +12,7 @@ import re
 mysql = MySQL(app)
 excel.init_excel(app)
 
-
+#Login page
 @app.route('/', methods=['GET', 'POST'])
 def login():
 	msg = ''
@@ -29,26 +29,32 @@ def login():
 			return redirect(url_for('home'))
 		else:
 			msg = 'Incorrect username/password!'
+	# Login credentials taken and the session for the particular login is created.
 	if 'loggedin' in session:
 		return redirect(url_for('home'))
 	return render_template('index.html', title='Sign In',msg = msg)
 
+#logout
 @app.route('/logout')
 def logout():
 	session.pop('loggedin', None)
 	session.pop('username', None)
 	session.pop('type', None)
 	return redirect(url_for('login'))
+	# Logs out by removing existing login session
 
+#Home
 @app.route('/home')
 def home():
 	if 'loggedin' in session and session['type']=='executive':
 		return render_template('home1.html', username=session['username'],emp_type=session['type'])
+	# For the employee type - Executive, the respective interface is displayed.
 	elif 'loggedin' in session and session['type']=='cashier':
 		return render_template('home2.html', username=session['username'],emp_type=session['type'])
+	# For the employee type - Cashier, the respective interface is displayed.
 	return redirect(url_for('login'))
 
-
+#Customer Status
 @app.route('/customer_status',methods=['GET', 'POST'])
 def customer_status():
 	if('loggedin' not in session):
@@ -59,6 +65,7 @@ def customer_status():
 	cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id AND S.status=1;')
 	values = cursor.fetchall()
 	return render_template('customer_status.html',values=values)
+	# Renders the last updated customer status whether active or inactive.
 
 #create account
 @app.route('/create_account', methods=['GET', 'POST'])
@@ -104,6 +111,7 @@ def c_account():
 		return render_template('create_account.html', username=session['username'],emp_type=session['type'], msg=msg)
 	return redirect(url_for('login'))
 
+#Create customer
 @app.route('/create_customer', methods=['GET', 'POST'])
 def create_customer():
 	msg=""
@@ -138,7 +146,7 @@ def create_customer():
 			return redirect(url_for('login'))
 		except Exception as e:
 			msg = "Please enter a valid Customer SSN ID"
-
+	# Customer created and details are inserted into the database table named customer and status updated in customer_status table.
 	if 'loggedin' in session and session['type'] == 'executive':
 			return render_template('create_customer.html', username=session['username'], emp_type=session['type'],
 								   msg=msg)
@@ -297,6 +305,7 @@ def delete_customer():
 	
 	return render_template('delete_customer.html',checked = checked,details =details,msg=msg)
 
+#Delete Account
 @app.route('/delete_account',methods=['GET','POST'])
 def delete_account():
 	msg=""
@@ -321,12 +330,13 @@ def delete_account():
 											   message=message, acc_created=acc_created, last_updated=last_updated, status=status)
 		except Exception as e:
 			msg="Please enter valid Account Id"
-
+	# The account to be deleted is taken from delete_account and given to del_acc_details
 	if 'loggedin' in session and session['type'] == 'executive':
 		return render_template('delete_account.html', username=session['username'], emp_type=session['type'], msg=msg)
 
 	return redirect(url_for('login'))
 
+#Account deletion page with account information displayed
 @app.route('/del_acc_details',methods=['GET','POST'])
 def delete_account_details():
 	msg = ""
@@ -343,20 +353,21 @@ def delete_account_details():
 			return redirect(url_for('home'))
 		except Exception as e:
 			msg="Could not delete, Please try again later!"
-
+	# The account information is displayed, reconfirmed whether to be deleted and then deleted.
 	if 'loggedin' in session and session['type'] == 'executive':
 		return render_template('del_acc_details.html', username=session['username'], emp_type=session['type'], msg=msg)
 	return redirect(url_for('login'))
 
-
+#Search Account
 @app.route('/search_account')
 def search_account():
 	if 'loggedin' in session and session['type'] == 'cashier':
 		return render_template('search_account.html', username=session['username'], emp_type=session['type'])
+	# Account is searched by either entering Customer Id or Customer SSN or Account Id.
 	else:
 		return redirect(url_for('login'))
 
-
+#Account info page with deposit, withdraw and transfer options
 @app.route('/display_search_account',methods=['GET','POST'])
 def display_search_account():
 	if request.method == 'GET' and 'account_id' in request.args:
@@ -409,6 +420,7 @@ def display_search_account():
 				else:
 					flash('No results found for the search criteria', 'danger')
 					return redirect(url_for('search_account'))
+		# Checks for Account Id or Customer SSN or Customer Id entered and renders the display_search_account.
 		else:
 			return redirect(url_for('search_account'))
 	else:
@@ -709,7 +721,7 @@ def display_statement():
 	else:
 		return redirect(url_for('login'))
 
-
+#Withdraw money from account
 @app.route('/withdraw_money',methods=['POST'])
 def withdraw_money():
 	msg = ''
@@ -735,6 +747,7 @@ def withdraw_money():
 				return redirect(url_for('display_search_account',account_id=acc_id))
 		except Exception as e:
 			msg = 'could not withdraw money...Please try again'
+	# The withdraw money action is inserted in transactions table and the balance is updated in the account table.
 	if 'loggedin' in session and session['type'] == 'cashier' and (
 			'cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
 		data = []
@@ -744,6 +757,7 @@ def withdraw_money():
 		data.append(request.form['a_type'])
 		data.append(request.form['balance'])
 		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,data=data)
+		# The form details are put in the list named data.
 	return redirect(url_for('login'))
 
 
