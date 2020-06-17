@@ -6,6 +6,7 @@ import MySQLdb.cursors
 import time
 from datetime import datetime
 import re
+import requests
 
 mysql = MySQL(app)
 
@@ -52,7 +53,7 @@ def customer_status():
 	if (request.method == 'POST'):
 		return redirect(url_for('customer_status'))
 	cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-	cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id')
+	cursor.execute('SELECT C.customer_ssn, C.customer_id, S.message, S.last_updated,S.status FROM customer C,customer_status S WHERE C.customer_id = S.customer_id AND S.status=1;')
 	values = cursor.fetchall()
 	return render_template('customer_status.html',values=values)
 
@@ -347,17 +348,20 @@ def delete_account_details():
 @app.route('/search_account')
 def search_account():
 	if 'loggedin' in session and session['type'] == 'cashier':
-		if('error_empty' in request.args):
-			return render_template('search_account.html',username=session['username'],emp_type=session['type'],error_empty=True)
-		else:
-			return render_template('search_account.html', username=session['username'], emp_type=session['type'])
+		return render_template('search_account.html', username=session['username'], emp_type=session['type'])
 	else:
 		return redirect(url_for('login'))
 
 
 @app.route('/display_search_account',methods=['GET','POST'])
 def display_search_account():
-	if request.method == 'GET':
+	if request.method == 'GET' and 'account_id' in request.args:
+		account_id = request.args['account_id']
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id=C.customer_id AND account_id = %s AND status=1',(account_id,))
+		values_account = cursor.fetchone()
+		if (values_account):
+			return render_template('display_search_account.html', values_account=values_account)
 		return redirect(url_for('search_account'))
 	if 'loggedin' in session and session['type'] == 'cashier':
 		if (request.method=='POST' and 'account_select' in request.form):
@@ -375,29 +379,32 @@ def display_search_account():
 			account_id = request.form['account_id']
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			if(account_id == '' and customer_id == '' and customer_ssn == ''):
-				error_empty = True
-				return redirect(url_for('search_account',error_empty = error_empty))
+				flash('Please enter either of the search terms!','danger')
+				return redirect(url_for('search_account'))
 			if(account_id == '' and customer_id == ''):
 				cursor.execute('SELECT C.customer_id,C.name FROM customer C,customer_status S WHERE C.customer_ssn = %s AND C.customer_id=S.customer_id AND S.status=1;', (customer_ssn,))
 				values = cursor.fetchone()
 				if(values):
 					customer_id = values['customer_id']
 				else:
-					return render_template('display_search_account.html',error_empty=True)
+					flash('No results found for the search criteria','danger')
+					return redirect(url_for('search_account'))
 			if(account_id == ''):
 				cursor.execute('SELECT * FROM account A,customer C,customer_status S WHERE A.customer_id = C.customer_id AND C.customer_id = S.customer_id AND A.customer_id = %s AND S.status=1 AND A.status=1', (customer_id,))
 				values_customer = cursor.fetchall()
 				if(values_customer):
 					return render_template('display_search_account.html',values_customer = values_customer)
 				else:
-					return render_template('display_search_account.html', error_empty=True)
+					flash('No results found for the search criteria', 'danger')
+					return redirect(url_for('search_account'))
 			else:
 				cursor.execute('SELECT * FROM account A,customer C WHERE A.customer_id=C.customer_id AND account_id = %s AND status=1', (account_id,))
 				values_account = cursor.fetchone()
 				if(values_account):
 					return render_template('display_search_account.html',values_account = values_account)
 				else:
-					return render_template('display_search_account.html', error_empty=True)
+					flash('No results found for the search criteria', 'danger')
+					return redirect(url_for('search_account'))
 		else:
 			return redirect(url_for('search_account'))
 	else:
@@ -420,9 +427,8 @@ def deposit_money():
 			cursor.execute('UPDATE account SET balance = %s, message = %s, last_updated = %s WHERE account_id = %s and status = 1', (t_amt, 'amount deposited successfully', ts, acc_id))
 			mysql.connection.commit()
 			flash('Amount deposited successfully','success')
-			return redirect(url_for('login'))
+			return redirect(url_for('display_search_account',account_id=acc_id))
 		except Exception as e:
-			print('Failed to deposit ' + str(e))
 			msg = 'could not deposit money...Please try again'
 	if 'loggedin' in session and session['type']=='cashier' and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
 		data = []
@@ -433,14 +439,7 @@ def deposit_money():
 		data.append(request.form['balance'])
 		return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
 	return redirect(url_for('login'))
-	if 'loggedin' in session and session['type']=='cashier':
-		if request.args:
-			data = request.args.getlist('val')
-			return render_template('deposit_money.html', username=session['username'],emp_type=session['type'], msg=msg, data=data)
-	return redirect(url_for('login'))
 
-	
-	
 @app.route('/transfer_money',methods=['GET','POST'])
 def transfer_money():
 	msg=''
@@ -631,9 +630,8 @@ def withdraw_money():
 					(t_amt, 'amount withdrawn successfully', ts, acc_id))
 				mysql.connection.commit()
 				flash('Amount withdrawn successfully', 'success')
-				return redirect(url_for('login'))
+				return redirect(url_for('display_search_account',account_id=acc_id))
 		except Exception as e:
-			print('Failed to withdraw ' + str(e))
 			msg = 'could not withdraw money...Please try again'
 	if 'loggedin' in session and session['type'] == 'cashier' and (
 			'cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
@@ -643,14 +641,7 @@ def withdraw_money():
 		data.append(request.form['name'])
 		data.append(request.form['a_type'])
 		data.append(request.form['balance'])
-		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,
-							   data=data)
-	return redirect(url_for('login'))
-	if 'loggedin' in session and session['type'] == 'cashier':
-		if request.args:
-			data = request.args.getlist('val')
-			return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'],
-								   msg=msg, data=data)
+		return render_template('withdraw_money.html', username=session['username'], emp_type=session['type'], msg=msg,data=data)
 	return redirect(url_for('login'))
 
 

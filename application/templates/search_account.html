@@ -3,38 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Account Search</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
-<body>
+<body style="background-image:linear-gradient(to right, #3d7eaa, #ffe47a);">
     {% extends "cas_layout.html" %}
     {% block content %}
-        <div class="row">
-            <div class="container">
-                <h2>Account Search</h2>
-                <h3>Enter Customer ID/Customer SSN or Account ID</h3>
+            <div class="form_div">
+                <h2 class="text-center" style="margin:1% 0 3% 0;">Account Search</h2>
                 <form action="{{ url_for('display_search_account') }}" method="post">
-                  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="customer_id" placeholder="Customer ID">
-                  </div>
-                    <h2 style="padding:10px">OR</h2>
-                  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="customer_ssn" placeholder="Customer SSN">
-                  </div>
-                    <h2 style="padding:10px">OR</h2>
-                  <div class="form-group">
-                    <input type="text" class="form-control form-control-lg w-50" name="account_id" placeholder="Account ID">
-                  </div>
-                    {% if error_empty %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            Please enter atleast one of the above fields
+                  {% if msg %}
+                        <div class="alert alert-danger w-50" role="alert" style="margin: auto; margin-bottom:3%;">
+                            {{ msg }}
                         </div>
-                    {% endif %}
-                  <button type="submit" class="btn btn-primary">Submit</button>
+                  {% endif %}
+
+                  <div class="form-group row">
+                      <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer ID : </label>
+                      <div class="col-sm-5">
+                          <input type="text" class="form-control" name="customer_id" placeholder="Customer ID" pattern="\d{9}" title="Enter a valid 9 digit Customer ID" />
+                      </div>
+                  </div>
+                  <h4 class="text-center" style="margin-bottom:3%;">OR</h4>
+
+                  <div class="form-group row">
+                      <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer SSN : </label>
+                      <div class="col-sm-5">
+                          <input type="text" class="form-control" name="customer_ssn" placeholder="Customer SSN" pattern="\d{9}" title="Enter a valid 9 digit Customer SSN" />
+                      </div>
+                  </div>
+                  <h4 class="text-center" style="margin-bottom:3%;">OR</h4>
+
+                  <div class="form-group row">
+                      <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Account ID : </label>
+                      <div class="col-sm-5">
+                          <input type="text" class="form-control" name="account_id" placeholder="Account ID" pattern="\d{9}" title="Enter a valid 9 digit Account ID" />
+                      </div>
+                  </div>
+
+                  <div class="form-group text-center">
+                      <label for="Submit"></label>
+                      <button type="submit" class="btn btn-dark">Search</button>
+                  </div>
                 </form>
             </div>
-        </div>
     {% endblock %}
-
 </body>
 </html>

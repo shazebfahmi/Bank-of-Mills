@@ -1,16 +1,40 @@
-{% extends "cus_layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Customer</title>
+</head>
+<body style="background-image: linear-gradient(to right,#74ebd5 , #acb6e5);">
+    {% extends "cus_layout.html" %}
+    {% block content%}
+    <div class="form_div">
+        <h2 class="text-center" style="margin:1% 0 3% 0;">Customer Search</h2>
+        <form action="{{url_for('customer_detail')}}" method="POST">
+            {% if msg %}
+                <div class="alert alert-danger w-50" role="alert" style="margin: auto; margin-bottom:3%;">
+                    {{ msg }}
+                </div>
+            {% endif %}
 
-{% block content %}
-
-<h3 style="text-align:center ; color:navy ;" ><b>SEARCH CUSTOMER DETAILS</b></h3></b3></br></br></br>
-   <div style="align-items: center; align-content: center; text-align: center;">
-      <form action="{{url_for('customer_detail')}}" method="POST">
-            <label style="margin-left: 20px ;margin-right: 40px ; color:slateblue;"><b>SSN ID</b></label>
-            <input placeholder="Enter 9 digit Customer ID" type="number"  title="SSN ID must be a 9 digit numeric entry" name="SSN" value="SSN"></br></br>
-            <label style="margin-left: 30px;"><b>OR</b></label></br></br>
-            <label style="color:slateblue;"><b>CUSTOMER ID</b></label>
-            <input type="number" placeholder="Enter 9 digit SSSN ID" title="CUSTOMER ID must be a 9 digit numeric entry" name="CUSTOMER_ID" value="CUSTOMER_ID"></br></br>
-         <button style="background-color:orange ; text-color: black ; ">SEARCH</button>
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer SSN : </label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" placeholder="Customer SSN (9-digits)" pattern="\d{9}" title="SSN ID must be a 9 digit numeric entry" name="SSN" />
+                </div>
+            </div>
+            <h4 class="text-center" style="margin-bottom:3%;">OR</h4>
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer ID : </label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control" placeholder="Customer ID (9-digits)" pattern="\d{9}" title="Customer ID must be a 9 digit numeric entry" name="CUSTOMER_ID" />
+                </div>
+            </div>
+            <div class="form-group text-center">
+                      <label for="Submit"></label>
+                      <button type="submit" class="btn btn-dark">Search</button>
+            </div>
       </form>
-</div>
+    </div>
 {% endblock %}
+</body>
+</html>

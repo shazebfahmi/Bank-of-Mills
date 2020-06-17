@@ -3,26 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Account Search Results</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        form {
+            float:left;
+            margin:0 8%;
+        }
+    </style>
 </head>
-<body>
+<body style="background-image: linear-gradient(to right, #3d7eaa, #ffe47a);">
     {% extends "cas_layout.html" %}
     {% block content%}
-        <div class="container">
-            <h2>Account Search Results</h2>
-            {% if error_empty %}
-                <div class="alert alert-danger">
-                    No results matching the search criteria.
-                </div>
-                <a href="{{ url_for('search_account') }}" class="btn btn-dark" role="button">Search again</a>
-            {% endif %}
-
+        <div class="form_div" style="padding:50px;">
+            <h2 class="text-center" style="margin:1% 0 3% 0;">Account Search Results</h2>
             {% if values_customer %}
-                <h2>Customer ID - {{ values_customer[0]['customer_id'] }}</h2>
-                <form method="post" action="{{ url_for('display_search_account') }}">
+                <h3 class="text-center" style="margin:1% 0 3% 0;">Customer ID - {{ values_customer[0]['customer_id'] }}</h3>
+                <form method="post" action="{{ url_for('display_search_account') }}" style="margin-left:35%;margin-bottom:5%;">
                     <div class="form-group">
-                        <select class="form-control form-control-lg w-25" name="account_select" onchange="this.form.submit()">
+                        <select class="form-control" name="account_select" onchange="this.form.submit()">
                             <option value="" disabled selected>Select Account ID</option>
                             {% for i in values_customer %}
                                 <option value="{{ i['account_id'] }}">
@@ -36,47 +33,43 @@
 
             {% if values_account_select %}
                 <div class="table-responsive" style="margin-top:30px;">
-                    <table class="table table-dark">
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center">Customer ID</th>
+                                <th class="text-center">Account</th>
+                                <th class="text-center">Customer Name</th>
+                                <th class="text-center">Account Type</th>
+                                <th class="text-center">Account Balance</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <tr>
-                                <td class="text-center">Customer ID</td>
                                 <td class="text-center">{{ values_account_select['customer_id'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Account ID</td>
                                 <td class="text-center">{{ values_account_select['account_id'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Customer Name</td>
-                                <td class="text-center">{{ values_account_select['name'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Account Type</td>
-                                <td class="text-center">{{ values_account_select['account_type'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Account Balance</td>
-                                <td class="text-center">{{ values_account_select['balance'] }}</td>
+                                <td class="text-center">{{ values_account_select['name']|title }}</td>
+                                <td class="text-center">{{ values_account_select['account_type']|title }}</td>
+                                <td class="text-center">Rs. {{ values_account_select['balance'] }}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div style="text-align:center;margin-top:30px;">
 					<form method="post" action="{{url_for('deposit_money')}}">
-						<input type="text" name="cid" value="{{values_account_select['customer_id']}}" hidden=True/>
-						<input type="text" name="aid" value="{{values_account_select['account_id']}}" hidden=True/>
-						<input type="text" name="name" value="{{values_account_select['name']}}" hidden=True/>
-						<input type="text" name="a_type" value="{{values_account_select['account_type']}}" hidden=True/>
-						<input type="text" name="balance" value="{{values_account_select['balance']}}" hidden=True/>
+						<input type="hidden" name="cid" value="{{ values_account_select['customer_id'] }}"/>
+						<input type="hidden" name="aid" value="{{ values_account_select['account_id'] }}"/>
+						<input type="hidden" name="name" value="{{ values_account_select['name'] }}"/>
+						<input type="hidden" name="a_type" value="{{ values_account_select['account_type'] }}"/>
+						<input type="hidden" name="balance" value="{{ values_account_select['balance'] }}"/>
 						<button type="submit" class="btn btn-dark">Deposit</button>
 					</form>
 
                     <form method="post" action="{{url_for('withdraw_money')}}">
-						<input type="text" name="cid" value="{{values_account_select['customer_id']}}" hidden=True/>
-						<input type="text" name="aid" value="{{values_account_select['account_id']}}" hidden=True/>
-						<input type="text" name="name" value="{{values_account_select['name']}}" hidden=True/>
-						<input type="text" name="a_type" value="{{values_account_select['account_type']}}" hidden=True/>
-						<input type="text" name="balance" value="{{values_account_select['balance']}}" hidden=True/>
+						<input type="hidden" name="cid" value="{{ values_account_select['customer_id'] }}"/>
+						<input type="hidden" name="aid" value="{{ values_account_select['account_id'] }}"/>
+						<input type="hidden" name="name" value="{{ values_account_select['name'] }}" />
+						<input type="hidden" name="a_type" value="{{ values_account_select['account_type'] }}"/>
+						<input type="hidden" name="balance" value="{{ values_account_select['balance'] }}"/>
 						<button type="submit" class="btn btn-dark">Withdraw</button>
 					</form>
                     <a href="{{ url_for('transfer_money', val = (values_account_select['customer_id'], values_account_select['account_id'], values_account_select['name'],values_account_select['account_type'], values_account_select['balance']) ) }}" class="btn btn-dark" role="button">Transfer</a>
@@ -85,27 +78,23 @@
 
             {% if values_account %}
                 <div class="table-responsive" style="margin-top:30px;">
-                    <table class="table table-dark">
+                    <table class="table">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center">Customer ID</th>
+                                <th class="text-center">Account</th>
+                                <th class="text-center">Customer Name</th>
+                                <th class="text-center">Account Type</th>
+                                <th class="text-center">Account Balance</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             <tr>
-                                <td class="text-center">Customer ID</td>
                                 <td class="text-center">{{ values_account['customer_id'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Account ID</td>
                                 <td class="text-center">{{ values_account['account_id'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Customer Name</td>
-                                <td class="text-center">{{ values_account['name'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Account Type</td>
-                                <td class="text-center">{{ values_account['account_type'] }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center">Account Balance</td>
-                                <td class="text-center">{{ values_account['balance'] }}</td>
+                                <td class="text-center">{{ values_account['name']|title }}</td>
+                                <td class="text-center">{{ values_account['account_type']|title }}</td>
+                                <td class="text-center">Rs. {{ values_account['balance'] }}</td>
                             </tr>
                         </tbody>
                     </table>
