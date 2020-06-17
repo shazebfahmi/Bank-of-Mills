@@ -444,7 +444,15 @@ def deposit_money():
 @app.route('/transfer_money',methods=['GET','POST'])
 def transfer_money():
 	msg=''
-	if 'loggedin' in session and session['type'] == 'cashier':
+	if 'loggedin' in session and session['type'] == 'cashier'  and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
+		data = []
+		data.append(request.form['cid'])
+		data.append(request.form['aid'])
+		data.append(request.form['name'])
+		data.append(request.form['a_type'])
+		data.append(request.form['balance'])
+		print(data)
+		
 		if request.form.get('btn') == 'transfer_btn':
 			amount = request.form.get('amount')
 			
@@ -460,17 +468,17 @@ def transfer_money():
 			
 			
 		
-		cred = request.args.getlist('val')
+		'''cred = request.args.getlist('val')
 		print(cred,type(cred))
 		cust_id = cred[0]
 		acc_id = cred[1]
 		cus_name = cred[2]
 		acc_type = cred[3]
-		bal = cred[4]
+		bal = cred[4]'''
 		
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (cust_id,))
+			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (data[0],))
 			accs = cursor.fetchall()
 			if len(accs)!=2:
 				flash("Cannot transfer, since only one type of account exists, for this customer ",'success')
@@ -479,10 +487,22 @@ def transfer_money():
 			print("diugfjkf")
 			
 		
-		print(" Customer id = "+str(cust_id)+" Account id "+acc_id+"  account type" + acc_type+ " bal : "+bal)
-		
+		print(" Customer id = "+str(data[0])+" Account id "+data[1]+"  account type" + data[3]+ " bal : "+ data[4])
+		try:
+			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s and account_type !=  %s ', (data[0],data[3]))
+			d_acc_id = cursor.fetchall()
 			
-		return render_template('transfer_money.html',cust_id=cust_id,acc_id=acc_id,cus_name=cus_name,acc_type=acc_type,bal=bal,msg=msg)
+			d_acc_id = d_acc_id[0]['account_id']
+			data.append(d_acc_id)
+			data.append(msg)
+			
+			print(d_acc_id)
+		except Exception as e: 
+			print(" error was : " +str(e))
+			
+		#return render_template('transfer_money.html',cust_id=cust_id,acc_id=acc_id,cus_name=cus_name,acc_type=acc_type,bal=bal,msg=msg,d_acc_id=d_acc_id)
+		return render_template('transfer_money.html',data = data)
 		
 	else:
 		return redirect(url_for('login'))
@@ -501,6 +521,9 @@ def verify_balance_and_execute():
 		dtype = request.form.get('d_acc')
 		
 		print("cus id in verify :"+id+" bal : "+bal+" amt "+amt+" acc id "+acc_id+" name : "+name+" s type "+stype+" dtype :"+dtype)
+		if int(amt) < 1:
+			flash("Cannot transfer, try amount more than 0.",'success')
+			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
 		if int(bal) - int(amt) < 1000:
 			flash("Cannot transfer, try again with lesser amount",'success')
 			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
@@ -517,25 +540,10 @@ def verify_balance_and_execute():
 				print("destiation acc no : ",dacc_id)
 				cursor.execute('update account set balance = %s , message = "account credited successfully" , last_updated = %s where account_type = %s and status =1',(str(cbal+int(amt)),ts,dtype))
 				
-				#for transactions table updation
-				#one = "insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values ('{0}','{1}','withdraw','{2}','{3}',{4})  ".format(id,acc_id,stype,ts,amt)
-				
-				#print(one)
-				
-				
 				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'withdraw',%s,%s,%s)  ",(id,acc_id,stype,ts,amt))
 				
 				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'deposit',%s,%s,%s)  ",(id,dacc_id,dtype,ts,amt))
 				
-				
-				
-				#cursor.execute('update account set balance = %d , message = "amount recieved successfully" , last_updated = %s where account_id != %s and status = 1 ', (int(bal)+diff,ts,acc_id))
-				#accs = cursor.fetchall()
-				'''if len(accs)!=2:
-					flash("Cannot transfer, ",'success')
-					return redirect(url_for('home'))'''
-					
-				#print("cursor val size :",len(accs))
 				mysql.connection.commit()
 				flash('Amount transferred successfully','success')
 				return redirect(url_for('login'))

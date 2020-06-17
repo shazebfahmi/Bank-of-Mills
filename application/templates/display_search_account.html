@@ -79,7 +79,17 @@
 						<input type="text" name="balance" value="{{values_account_select['balance']}}" hidden=True/>
 						<button type="submit" class="btn btn-dark">Withdraw</button>
 					</form>
-                    <a href="{{ url_for('transfer_money', val = (values_account_select['customer_id'], values_account_select['account_id'], values_account_select['name'],values_account_select['account_type'], values_account_select['balance']) ) }}" class="btn btn-dark" role="button">Transfer</a>
+					<form method="post" action="{{url_for('transfer_money')}}">
+						<input type="text" name="cid" value="{{values_account_select['customer_id']}}" hidden=True/>
+						<input type="text" name="aid" value="{{values_account_select['account_id']}}" hidden=True/>
+						<input type="text" name="name" value="{{values_account_select['name']}}" hidden=True/>
+						<input type="text" name="a_type" value="{{values_account_select['account_type']}}" hidden=True/>
+						<input type="text" name="balance" value="{{values_account_select['balance']}}" hidden=True/>
+						<button type="submit" class="btn btn-dark">Transfer</button>
+					</form>
+					
+                    <!--<a href="{{ url_for('transfer_money', val = (values_account_select['customer_id'], values_account_select['account_id'], values_account_select['name'],values_account_select['account_type'], values_account_select['balance']) ) }}" class="btn btn-dark" role="button">Transfer</a>-->
+					
                 </div>
             {% endif %}
 
@@ -128,7 +138,18 @@
 						<input type="text" name="balance" value="{{values_account['balance']}}" hidden=True/>
 						<button type="submit" class="btn btn-dark">Withdraw</button>
 					</form>
-                    <a href="{{ url_for('transfer_money', val = (values_account['customer_id'], values_account['account_id'], values_account['name'],values_account['account_type'], values_account['balance'])  ) }}	" class="btn btn-dark" role="button">Transfer</a>
+					<form method="post" action="{{url_for('transfer_money')}}">
+						<input type="text" name="cid" value="{{values_account['customer_id']}}" hidden=True/>
+						<input type="text" name="aid" value="{{values_account['account_id']}}" hidden=True/>
+						<input type="text" name="name" value="{{values_account['name']}}" hidden=True/>
+						<input type="text" name="a_type" value="{{values_account['account_type']}}" hidden=True/>
+						<input type="text" name="balance" value="{{values_account['balance']}}" hidden=True/>
+						<button type="submit" class="btn btn-dark">Transfer</button>
+					</form>
+					
+					
+                    <!--<a href="{{ url_for('transfer_money', val = (values_account['customer_id'], values_account['account_id'], values_account['name'],values_account['account_type'], values_account['balance'])  ) }}	" class="btn btn-dark" role="button">Transfer</a>-->
+					
                 </div>
             {% endif %}
         </div>
