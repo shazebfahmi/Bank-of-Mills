@@ -6,7 +6,6 @@ import MySQLdb.cursors
 import time
 from fpdf import FPDF
 import flask_excel as excel
-from io import StringIO
 from datetime import datetime
 import re
 
@@ -619,8 +618,7 @@ def display_statement():
 			end_date_raw= request.form['end_date']
 			account_id=request.form['accnt_id']
 			transactions=(pdf_xl_query(start_date_raw,end_date_raw,account_id))
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
 			trans=[]
 			for i in transactions:
@@ -643,12 +641,7 @@ def display_statement():
 			response=make_response(pdf.output(dest='S').encode('latin-1'))
 			response.headers['Content-Disposition']='inline , filename=output.pdf'
 			response.headers['Content-Type']='application/pdf'
-			return response
-
-=======
-			html=render_template('pdf_layout.html',transactions=transactions)
-			return render_pdf(HTML(string==html))
->>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
+			return respons
 		
 		#rendering Excel file for transactions between start date and end date	
 		if(request.method=='POST' and 'start_datex' in request.form and 'end_datex' in request.form and 'accnt_idx' in request.form):
@@ -657,10 +650,6 @@ def display_statement():
 			account_id=request.form['accnt_idx']
 			transactions=pdf_xl_query(start_date_raw,end_date_raw,account_id)
 			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
-<<<<<<< HEAD
-=======
-			print(transactions)
->>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
 			trans=[]
 			for i in transactions:
 				trans.append(i['transaction_id'])
@@ -668,11 +657,7 @@ def display_statement():
 				transactions_list.append(trans)
 				trans=[]
 			return  excel.make_response_from_array(transactions_list,"xlsx",file_name="Account_Status.xlsx")
-<<<<<<< HEAD
 
-=======
-	
->>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
 		#rendering PDF file for 'N' number of transactions
 		if(request.method=='POST' and 'count' in request.form and 'a_id' in request.form ):
 			account_id = request.form['a_id']
@@ -680,8 +665,6 @@ def display_statement():
 			val = 'SELECT * FROM transactions WHERE account_id = %s ORDER BY time DESC LIMIT %s ' % (account_id,count)
 			cursor.execute(val)
 			transactions = cursor.fetchall()
-<<<<<<< HEAD
-
 			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
 			trans=[]
 			for i in transactions:
@@ -705,10 +688,6 @@ def display_statement():
 			response.headers['Content-Disposition']='inline , filename=output.pdf'
 			response.headers['Content-Type']='application/pdf'
 			return response
-=======
-			html=render_template('pdf_layout.html',transactions=transactions)
-			return render_pdf(HTML(string==html))
->>>>>>> bd5cfe75e09181fa42adf2484dfd7f1d4bbaec8c
 		
 		#rendering Excel file for 'N' number of transactions	
 		if(request.method=='POST' and 'countx' in request.form and 'a_idx' in request.form):
