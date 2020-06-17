@@ -638,7 +638,7 @@ def display_statement():
 					pdf.cell(45,10,j,1,0,'C')
 				pdf.cell(80,10,"",0,1)
 			response=make_response(pdf.output(dest='S').encode('latin-1'))
-			response.headers['Content-Disposition']='inline , filename=output.pdf'
+			response.headers['Content-Disposition']='attachment ; filename=output.pdf'
 			response.headers['Content-Type']='application/pdf'
 			return response
 		
@@ -684,7 +684,7 @@ def display_statement():
 					pdf.cell(45,10,j,1,0,'C')
 				pdf.cell(80,10,"",0,1)
 			response=make_response(pdf.output(dest='S').encode('latin-1'))
-			response.headers['Content-Disposition']='inline , filename=output.pdf'
+			response.headers['Content-Disposition']='attachment ; filename=output.pdf'
 			response.headers['Content-Type']='application/pdf'
 			return response
 		
