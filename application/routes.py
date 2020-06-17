@@ -459,7 +459,7 @@ def transfer_money():
 		data.append(request.form['name'])
 		data.append(request.form['a_type'])
 		data.append(request.form['balance'])
-		print(data)
+		
 		
 		if request.form.get('btn') == 'transfer_btn':
 			amount = request.form.get('amount')
@@ -469,21 +469,8 @@ def transfer_money():
 			print("amount enterred = "+amount+" balance is : "+bal)
 			if (int(bal) - int(amount)) < 1000:
 				msg = 'Amount cannot be transfered, to maintain minimum balance (try smaller amount)'
-				print("masg updated")
-			
-				
-			#return render_template('transfer_money.html',msg=msg)
-			
-			
-		
-		'''cred = request.args.getlist('val')
-		print(cred,type(cred))
-		cust_id = cred[0]
-		acc_id = cred[1]
-		cus_name = cred[2]
-		acc_type = cred[3]
-		bal = cred[4]'''
-		
+								
+					
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s', (data[0],))
@@ -495,7 +482,7 @@ def transfer_money():
 			print("diugfjkf")
 			
 		
-		print(" Customer id = "+str(data[0])+" Account id "+data[1]+"  account type" + data[3]+ " bal : "+ data[4])
+		
 		try:
 			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute('SELECT account_id FROM account where status = 1 and customer_id = %s and account_type !=  %s ', (data[0],data[3]))
@@ -509,7 +496,6 @@ def transfer_money():
 		except Exception as e: 
 			print(" error was : " +str(e))
 			
-		#return render_template('transfer_money.html',cust_id=cust_id,acc_id=acc_id,cus_name=cus_name,acc_type=acc_type,bal=bal,msg=msg,d_acc_id=d_acc_id)
 		return render_template('transfer_money.html',data = data)
 		
 	else:
@@ -528,7 +514,7 @@ def verify_balance_and_execute():
 		stype = request.form.get('s_acc')
 		dtype = request.form.get('d_acc')
 		
-		print("cus id in verify :"+id+" bal : "+bal+" amt "+amt+" acc id "+acc_id+" name : "+name+" s type "+stype+" dtype :"+dtype)
+		
 		if int(amt) < 1:
 			flash("Cannot transfer, try amount more than 0.",'success')
 			return redirect(url_for('transfer_money',val=(id,acc_id,name,stype,bal) ) )
@@ -544,8 +530,7 @@ def verify_balance_and_execute():
 				abal = cursor.fetchall()
 				cbal = abal[0]['balance']
 				dacc_id = abal[0]['account_id']
-				print(cbal,type(cbal))
-				print("destiation acc no : ",dacc_id)
+				
 				cursor.execute('update account set balance = %s , message = "account credited successfully" , last_updated = %s where account_type = %s and status =1',(str(cbal+int(amt)),ts,dtype))
 				
 				cursor.execute("insert into transactions (customer_id,account_id,description,acc_type,time,amount)  values (%s,%s,'withdraw',%s,%s,%s)  ",(id,acc_id,stype,ts,amt))
@@ -556,12 +541,7 @@ def verify_balance_and_execute():
 				flash('Amount transferred successfully','success')
 				return redirect(url_for('login'))
 			except Exception as e:
-				print('Failed to transfer :  ' + str(e))
 				msg = 'could not deposit money...Please try again'
-		#print(type(bal),type(amt))
-		
-		
-		
 		
 		return redirect(url_for('home'))
 		
