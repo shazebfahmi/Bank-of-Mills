@@ -62,6 +62,7 @@ def customer_status():
 	values = cursor.fetchall()
 	return render_template('customer_status.html',values=values)
 
+#create account
 @app.route('/create_account', methods=['GET', 'POST'])
 def c_account():
 	msg = ''
@@ -91,7 +92,7 @@ def c_account():
 				mysql.connection.commit()
 				flash('Account created successfully','success')
 				return redirect(url_for('home'))
-		except Exception as e:
+		except Exception as e:#different error for foreign key constraint violation and other unhandled exceptions 
 			print('Failed to insert into account' + str(e))
 			if str(e).find('foreign key constraint fails') != -1: 
 				msg = 'Customer ID does not exist'
@@ -409,6 +410,7 @@ def display_search_account():
 	else:
 		redirect(url_for('login'))
 
+#Deposit money
 @app.route('/deposit_money',methods=['GET','POST'])
 def deposit_money():
 	msg = ''
@@ -430,6 +432,7 @@ def deposit_money():
 		except Exception as e:
 			print('Failed to deposit ' + str(e))
 			msg = 'could not deposit money...Please try again'
+	#get the values from display_search_account and send it to deposit_money
 	if 'loggedin' in session and session['type']=='cashier' and ('cid' and 'aid' and 'name' and 'a_type' and 'balance' in request.form):
 		data = []
 		data.append(request.form['cid'])
@@ -587,7 +590,7 @@ def display_statement():
 					flash("Please enter the start and end dates.", 'danger')
 					return redirect(url_for('account_statement'))
 				start_date=start_date_raw+' 00:00:01'
-				end_date =start_date_raw+' 23:59:59'
+				end_date =end_date_raw+' 23:59:59'
 				start_check = datetime.strptime(start_date,'%Y-%m-%d %H:%M:%S')
 				end_check = datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')
 				if(start_check > end_check):
@@ -614,13 +617,13 @@ def display_statement():
 			return transactions
 
 		#rendering PDF file for transactions between Start date and End date
-		'''if(request.method=='POST' and 'start_date' in request.form and 'end_date' in request.form and 'accnt_id' in request.form):
+		if(request.method=='POST' and 'start_date' in request.form and 'end_date' in request.form and 'accnt_id' in request.form):
 			start_date_raw= request.form['start_date']
 			end_date_raw= request.form['end_date']
 			account_id=request.form['accnt_id']
 			transactions=(pdf_xl_query(start_date_raw,end_date_raw,account_id))
 			html=render_template('pdf_layout.html',transactions=transactions)
-			return render_pdf(HTML(string==html))'''
+			return render_pdf(HTML(string==html))
 		
 		#rendering Excel file for transactions between start date and end date	
 		if(request.method=='POST' and 'start_datex' in request.form and 'end_datex' in request.form and 'accnt_idx' in request.form):
@@ -628,16 +631,17 @@ def display_statement():
 			end_date_raw= request.form['end_datex']
 			account_id=request.form['accnt_idx']
 			transactions=pdf_xl_query(start_date_raw,end_date_raw,account_id)
-			transactions_list=[["CUSTOMER ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			print(transactions)
 			trans=[]
 			for i in transactions:
 				trans.append(i['transaction_id'])
-				trans.extend((i['customer_id'],i['description'],i['time'],i['amount']))
+				trans.extend((i['description'],i['time'],i['amount']))
 				transactions_list.append(trans)
 				trans=[]
 			return  excel.make_response_from_array(transactions_list,"xlsx",file_name="Account_Status.xlsx")
 	
-		'''#rendering PDF file for 'N' number of transactions
+		#rendering PDF file for 'N' number of transactions
 		if(request.method=='POST' and 'count' in request.form and 'a_id' in request.form ):
 			account_id = request.form['a_id']
 			count = request.form['count']
@@ -645,7 +649,7 @@ def display_statement():
 			cursor.execute(val)
 			transactions = cursor.fetchall()
 			html=render_template('pdf_layout.html',transactions=transactions)
-			return render_pdf(HTML(string==html))'''
+			return render_pdf(HTML(string==html))
 		
 		#rendering Excel file for 'N' number of transactions	
 		if(request.method=='POST' and 'countx' in request.form and 'a_idx' in request.form):
