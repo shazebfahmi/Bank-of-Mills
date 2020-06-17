@@ -2,70 +2,82 @@
     <head>
         <meta charset="utf-8">
 		<title>Transfer Money</title>
-		 <link rel="stylesheet" href="{{ url_for('static', filename = 'css/main.css')}}"/>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     </head>
-    <body>
+    <body  style="background-image: linear-gradient(to right, #3d7eaa, #ffe47a);">
         {% extends "cas_layout.html" %}
 
         {% block content%}
-
-		
-        <div class="row">
-            <div class="container">
-                <h2>Transfer Money </h2>
+            <div class="form_div">
+                <h2 class="text-center" style="margin:1% 0 3% 0;">Transfer Money</h2>
 				{% if msg %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            {{ msg }}
-                        </div>
-                    {% endif %}
+                    <div class="alert alert-danger w-50" role="alert" style="margin: auto; margin-bottom:3%;">
+                        {{ msg }}
+                    </div>
+                {% endif %}
                 <form action="{{ url_for('verify_balance_and_execute') }}" method="post">
-					
-					<div class="form-group">
-                    <h6>Name : </h6><input type="text" class="form-control form-control-lg w-50" name="name" value="{{data[2]}}" readonly="readonly"  >
-                  </div>
-				  
-				  <div class="form-group">
-                    <h6>Customer Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="cus_id" value="{{data[0]}}" readonly="readonly"  >
-                  </div>
-				  
-				   <div class="form-group">
-                    <h6>Account Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="acc_id" value="{{data[1]}}" readonly="readonly"  >
-                  </div>
-				  
-                  <div class="form-group">
-                    <h6>Source Account Type (this account) : </h6><input type="text" class="form-control form-control-lg w-50" name="s_acc" value="{{data[3]}}" readonly="readonly" >
-                  </div>
-				  
-				  <div class="form-group">
-                    <h6>Destination Account Id  : </h6><input type="text" class="form-control form-control-lg w-50" name="dacc_id" value="{{data[5]}}" readonly="readonly"  >
-                  </div>
-				  
-				  <div class="form-group">
-                    <h6>Destination Account Type : </h6><input type="text" class="form-control form-control-lg w-50" name="d_acc" 
-					value={% if data[3]=='savings' %}"current"{% else %}"savings"{%endif%} }} readonly="readonly" >
-                  </div>
-				  
-				  <div class="form-group">
-                    <h6>Balance : </h6><input type="text" class="form-control form-control-lg w-50" name="balance" value="{{data[4]}}" readonly="readonly" >
-                  </div>
-				  
-				  <div class="form-group">
-                    <h6>Enter Amount  : </h6><input type="text" class="form-control form-control-lg w-50" name="amount" placeholder="Enter Amount " required>
-                  </div>
-				  {{ val }}
-				
-                    {% if msg %}
-                        <div class="alert alert-danger w-50" role="alert">
-                            {{ msg }}
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer Name : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="name" value="{{ data[2] }}" readonly="readonly"  />
                         </div>
-                    {% endif %}
-                  <button type="submit" value="transfer_btn"  name="btn" class="btn btn-primary">Initiate Transfer</button>
-				  </form><br>
-				  
-					<a href="{{ url_for('display_search_account') }}"><button value="back"  name="btn" class="btn btn-primary">Go Back  </button></a>
-				
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Customer ID : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="cus_id" value="{{ data[0] }}" readonly="readonly"  />
+                        </div>
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Account ID : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="acc_id" value="{{ data[1] }}" readonly="readonly"  />
+                        </div>
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Source Account Type (Present Acc) : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="s_acc" value="{{ data[3]|title }}" readonly="readonly"  />
+                        </div>
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Destination Account ID : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="dacc_id" value="{{ data[5] }}" readonly="readonly"  />
+                        </div>
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Destination Account Type : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="d_acc" value="{% if data[3]=='savings' %}Current{% else %}Savings{%endif%}" readonly="readonly"  />
+                        </div>
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Balance : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="balance" value="{{ data[4] }}" readonly="readonly"  />
+                        </div>
+            	    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label" style="margin-left:8%; margin-bottom:3%">Amount to Transfer : </label>
+                        <div class="col-sm-5">
+                            <input type="text" class="form-control" name="amount" pattern="[0-9]*" placeholder="Amount to Transfer" min="10" max="50000" title="Enter an amount between 10 to 50,000" required/>
+                        </div>
+            	    </div>
+
+                    <div class="form-group" style="float:left;margin:0 10% 0 25%;">
+                        <label for="Submit"></label>
+                        <button type="submit" value="transfer_btn"  name="btn" class="btn btn-dark">Initiate Transfer</button>
+				    </div>
+
+                </form>
+				<a href="{{ url_for('display_search_account',account_id=data[1]) }}"><button value="back"  name="btn" class="btn btn-dark">Go Back  </button></a>
 					
                 
 
