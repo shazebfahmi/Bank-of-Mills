@@ -9,8 +9,6 @@ import flask_excel as excel
 from io import StringIO
 from datetime import datetime
 import re
-import requests
-
 
 mysql = MySQL(app)
 excel.init_excel(app)
