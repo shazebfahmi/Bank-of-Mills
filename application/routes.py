@@ -1,13 +1,19 @@
 from application import app
-from flask import Flask,redirect,url_for,flash,render_template,request,session
+from flask import Flask,redirect,url_for,flash,render_template,request,session,make_response
 from flask_mysqldb import MySQL 
 import MySQLdb
 import MySQLdb.cursors
 import time
+import flask_excel as excel
+#from flask_weasyprint import HTML,render_pdf
+from io import StringIO
 from datetime import datetime
 import re
 
+
 mysql = MySQL(app)
+excel.init_excel(app)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -442,11 +448,13 @@ def account_statement():
 	else:
 		return redirect(url_for('login'))
 
+
+
 @app.route('/display_statement',methods=['POST'])
 def display_statement():
 	if('loggedin' in session and session['type'] == 'cashier'):
-		if(request.method == 'POST' and 'account_id' in request.form):
-			cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+		if(request.method == 'POST' and 'account_id' in request.form ):
 			account_id = request.form['account_id']
 			radio_option = request.form['radio_options']
 			if(radio_option == 'last'):
@@ -459,31 +467,95 @@ def display_statement():
 				cursor.execute(val)
 				transactions = cursor.fetchall()
 				if(transactions):
-					return render_template('display_statement.html',transactions=transactions)
+					typ=False
+					return render_template('display_statement.html',transactions=transactions,account_id=account_id,count=count,type=typ)
 				else:
 					flash("No transactions found.",'danger')
 					return redirect(url_for('account_statement'))
 			else:
-				start_date = request.form['start_date']
-				end_date = request.form['end_date']
-				if(start_date == '' or end_date==''):
+				start_date_raw = request.form['start_date']
+				end_date_raw = request.form['end_date']
+				print(start_date_raw,end_date_raw,account_id)
+				if(start_date_raw == '' or end_date_raw==''):
 					flash("Please enter the start and end dates.", 'danger')
 					return redirect(url_for('account_statement'))
-				start_date+=' 00:00:01'
-				end_date += ' 23:59:59'
+				start_date=start_date_raw+' 00:00:01'
+				end_date =start_date_raw+' 23:59:59'
 				start_check = datetime.strptime(start_date,'%Y-%m-%d %H:%M:%S')
 				end_check = datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')
 				if(start_check > end_check):
 					flash("Start date is greater than End date.", 'danger')
 					return redirect(url_for('account_statement'))
+				print(start_date,end_date,account_id)
 				query = 'SELECT * FROM transactions WHERE (time BETWEEN "%s" AND "%s" AND account_id = %s) ORDER BY time DESC' % (start_date,end_date,account_id)
 				cursor.execute(query)
 				transactions = cursor.fetchall()
 				if(transactions):
-					return render_template('display_statement.html',transactions = transactions)
+					typ=True
+					return render_template('display_statement.html',transactions = transactions,start_date=start_date_raw,end_date=end_date_raw,account_id=account_id,type=typ)
 				else:
 					flash("No transactions found between the specified dates", 'danger')
 					return redirect(url_for('account_statement'))
+			return redirect(url_for('login'))
+		
+		def pdf_xl_query(start_date,end_date,accnt_id):
+			start_date=start_date_raw+' 00:00:01'
+			end_date=end_date_raw+ ' 23:59:59'
+			query = 'SELECT * FROM transactions WHERE (time BETWEEN "%s" AND "%s" AND account_id = %s) ORDER BY time DESC' % (start_date,end_date,account_id)
+			cursor.execute(query)
+			transactions = cursor.fetchall()
+			return transactions
+
+		#rendering PDF file for transactions between Start date and End date
+		'''if(request.method=='POST' and 'start_date' in request.form and 'end_date' in request.form and 'accnt_id' in request.form):
+			start_date_raw= request.form['start_date']
+			end_date_raw= request.form['end_date']
+			account_id=request.form['accnt_id']
+			transactions=(pdf_xl_query(start_date_raw,end_date_raw,account_id))
+			html=render_template('pdf_layout.html',transactions=transactions)
+			return render_pdf(HTML(string==html))'''
+		
+		#rendering Excel file for transactions between start date and end date	
+		if(request.method=='POST' and 'start_datex' in request.form and 'end_datex' in request.form and 'accnt_idx' in request.form):
+			start_date_raw= request.form['start_datex']
+			end_date_raw= request.form['end_datex']
+			account_id=request.form['accnt_idx']
+			transactions=pdf_xl_query(start_date_raw,end_date_raw,account_id)
+			transactions_list=[["CUSTOMER ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			trans=[]
+			for i in transactions:
+				trans.append(i['transaction_id'])
+				trans.extend((i['customer_id'],i['description'],i['time'],i['amount']))
+				transactions_list.append(trans)
+				trans=[]
+			return  excel.make_response_from_array(transactions_list,"xlsx",file_name="Account_Status.xlsx")
+	
+		'''#rendering PDF file for 'N' number of transactions
+		if(request.method=='POST' and 'count' in request.form and 'a_id' in request.form ):
+			account_id = request.form['a_id']
+			count = request.form['count']
+			val = 'SELECT * FROM transactions WHERE account_id = %s ORDER BY time DESC LIMIT %s ' % (account_id,count)
+			cursor.execute(val)
+			transactions = cursor.fetchall()
+			html=render_template('pdf_layout.html',transactions=transactions)
+			return render_pdf(HTML(string==html))'''
+		
+		#rendering Excel file for 'N' number of transactions	
+		if(request.method=='POST' and 'countx' in request.form and 'a_idx' in request.form):
+			account_id = request.form['a_idx']
+			count = request.form['countx']
+			val = 'SELECT * FROM transactions WHERE account_id = %s ORDER BY time DESC LIMIT %s ' % (account_id,count)
+			cursor.execute(val)
+			transactions = cursor.fetchall()
+			transactions_list=[["TRANSACTION ID","DESCRIPTION","DATE AND TIME","AMOUNT"]]
+			trans=[]
+			for i in transactions:
+				trans.append(i['transaction_id'])
+				trans.extend((i['description'],i['time'],i['amount']))
+				transactions_list.append(trans)
+				trans=[]
+			return  excel.make_response_from_array(transactions_list,"xlsx",file_name="Account_Status.xlsx")
+		####################
 		else:
 			return redirect(url_for('login'))
 	else:
