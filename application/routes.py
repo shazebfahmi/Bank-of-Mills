@@ -13,9 +13,10 @@ mysql = MySQL(app)
 excel.init_excel(app)
 
 #Login page
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods = ['GET', 'POST'])
 def login():
 	msg = ''
+	
 	if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
 		username = request.form['username']
 		password = request.form['password']
